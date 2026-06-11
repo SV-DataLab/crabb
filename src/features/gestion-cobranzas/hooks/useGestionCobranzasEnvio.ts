@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { CAMPANIA_DEFAULT_ID, CAMPANIAS_COBRANZA, getCampaniaById, INTERVALO_ENVIO_MS, COUNTDOWN_TICK_MS } from '../constants'
 import { gestionCobranzasService } from '../services/gestionCobranzasService'
 import type {
+  CampaniaCobranza,
   CampaniaCobranzaId,
   CampanaHistorial,
   EstadoEnvioFila,
@@ -11,7 +12,6 @@ import type {
   SendProgress,
   SocioCobranza,
 } from '../types'
-import { formatReminderMessage } from '../utils/formatReminderMessage'
 import { validatePhone } from '../utils/validatePhone'
 
 type AdminInfo = {
@@ -57,6 +57,10 @@ export function useGestionCobranzasEnvio(admin: AdminInfo) {
   const [filtroDeuda, setFiltroDeuda] = useState('')
   const [busqueda, setBusqueda] = useState('')
   const [campaniaId, setCampaniaId] = useState<CampaniaCobranzaId>(CAMPANIA_DEFAULT_ID)
+  const [campanias, setCampanias] = useState<CampaniaCobranza[]>(CAMPANIAS_COBRANZA)
+  const [totalActivos, setTotalActivos] = useState(0)
+  const [sociosConDeuda, setSociosConDeuda] = useState(0)
+  const [ejemploPreview, setEjemploPreview] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [loadError, setLoadError] = useState<string | null>(null)
 
@@ -72,15 +76,21 @@ export function useGestionCobranzasEnvio(admin: AdminInfo) {
     setIsLoading(true)
     setLoadError(null)
     try {
-      const [candidatos, hist] = await Promise.all([
+      const [resumen, candidatos, hist] = await Promise.all([
+        gestionCobranzasService.obtenerResumen(),
         gestionCobranzasService.listarCandidatos(),
         gestionCobranzasService.obtenerHistorial(),
       ])
+      setTotalActivos(resumen.totalActivos)
+      setSociosConDeuda(resumen.sociosConDeuda)
+      if (resumen.campaigns.length > 0) {
+        setCampanias(resumen.campaigns)
+      }
       setMembers(candidatos)
       setHistorial(hist)
       setUltimoEnvio(hist[0] ?? null)
     } catch {
-      setLoadError('No se pudieron cargar los datos de cobranzas simulados.')
+      setLoadError('No se pudieron cargar los datos de cobranzas.')
     } finally {
       setIsLoading(false)
     }
@@ -99,10 +109,6 @@ export function useGestionCobranzasEnvio(admin: AdminInfo) {
     })
   }, [members, filtroDeuda, busqueda])
 
-  const sociosConDeuda = useMemo(() => members.filter((m) => m.activo).length, [members])
-
-  const totalActivos = useMemo(() => members.filter((m) => m.activo).length, [members])
-
   const seleccionStats = useMemo(() => {
     const seleccionados = members.filter((m) => selectedIds.has(m.id))
     let validos = 0
@@ -114,13 +120,35 @@ export function useGestionCobranzasEnvio(admin: AdminInfo) {
     return { seleccionados: seleccionados.length, validos, invalidos }
   }, [members, selectedIds])
 
-  const campaniaSeleccionada = useMemo(() => getCampaniaById(campaniaId), [campaniaId])
+  const campaniaSeleccionada = useMemo(
+    () => campanias.find((c) => c.id === campaniaId) ?? getCampaniaById(campaniaId),
+    [campaniaId, campanias],
+  )
 
-  const ejemploPreview = useMemo(() => {
+  useEffect(() => {
     const elegible = members.find((m) => selectedIds.has(m.id) && validatePhone(m.telefono).valido)
     const socio = elegible ?? members.find((m) => m.activo && validatePhone(m.telefono).valido)
-    return socio ? formatReminderMessage(socio, campaniaSeleccionada.template) : null
-  }, [members, selectedIds, campaniaSeleccionada.template])
+
+    if (!socio) {
+      setEjemploPreview(null)
+      return
+    }
+
+    let cancelled = false
+
+    void gestionCobranzasService
+      .previsualizarMensaje(campaniaId, socio.id)
+      .then((mensaje) => {
+        if (!cancelled) setEjemploPreview(mensaje)
+      })
+      .catch(() => {
+        if (!cancelled) setEjemploPreview(null)
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [members, selectedIds, campaniaId])
 
   const setCampaniaSeleccionada = useCallback(
     (id: CampaniaCobranzaId) => {
@@ -307,8 +335,8 @@ export function useGestionCobranzasEnvio(admin: AdminInfo) {
       setCurrentMember(member)
       appendLog(`Enviando mensaje a: ${member.nombre}`)
 
-      const texto = formatReminderMessage(member, campaniaSeleccionada.template)
-      const result = await gestionCobranzasService.enviarRecordatorio(member, texto)
+      const texto = await gestionCobranzasService.previsualizarMensaje(campaniaId, member.id)
+      const result = await gestionCobranzasService.enviarRecordatorio(member, texto, campaniaId)
 
       if (cancelledRef.current) {
         setMembers((prev) =>
@@ -391,7 +419,7 @@ export function useGestionCobranzasEnvio(admin: AdminInfo) {
     runCountdown,
     selectedIds,
     seleccionStats.validos,
-    campaniaSeleccionada.template,
+    campaniaId,
     campaniaSeleccionada.label,
   ])
 
@@ -461,7 +489,7 @@ export function useGestionCobranzasEnvio(admin: AdminInfo) {
     seleccionStats,
     ejemploPreview,
     campaniaSeleccionada,
-    campanias: CAMPANIAS_COBRANZA,
+    campanias,
     setCampaniaSeleccionada,
     intervalMs: INTERVALO_ENVIO_MS,
     toggleSeleccion,

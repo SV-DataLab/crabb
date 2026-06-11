@@ -42,7 +42,7 @@ export function AdminGestionCobranzasPage() {
 
       {envio.isLoading ? (
         <div className="rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-600 shadow-md">
-          Cargando datos simulados de cobranzas…
+          Cargando datos de cobranzas…
         </div>
       ) : null}
 

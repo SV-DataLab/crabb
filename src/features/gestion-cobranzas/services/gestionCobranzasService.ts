@@ -1,8 +1,8 @@
 import { HISTORIAL_STORAGE_KEY } from '../constants'
 import { mockHistorialInicial } from '../mocks/mockHistorial'
-import { crearMockMembers } from '../mocks/mockMembers'
-import type { CampanaHistorial, ResultadoEnvioMock, SocioCobranza } from '../types'
-import { sendReminderMock } from './sendReminderMock'
+import type { CampaniaCobranza, CampaniaCobranzaId, CampanaHistorial, ResultadoEnvioMock, SocioCobranza } from '../types'
+import { collectionsService } from '../../../services/collectionsService'
+import { ApiError } from '../../../lib/apiClient'
 
 function readHistorialFromStorage(): CampanaHistorial[] {
   try {
@@ -19,15 +19,56 @@ function writeHistorialToStorage(entries: CampanaHistorial[]) {
   localStorage.setItem(HISTORIAL_STORAGE_KEY, JSON.stringify(entries.slice(0, 50)))
 }
 
+export type GestionCobranzasResumen = {
+  totalActivos: number
+  sociosConDeuda: number
+  simulationMode: boolean
+  campaigns: CampaniaCobranza[]
+}
+
 export const gestionCobranzasService = {
-  async listarCandidatos(): Promise<SocioCobranza[]> {
-    await Promise.resolve()
-    return crearMockMembers()
+  async obtenerResumen(): Promise<GestionCobranzasResumen> {
+    const summary = await collectionsService.getSummary()
+    return {
+      totalActivos: summary.totalActivos,
+      sociosConDeuda: summary.sociosConDeuda,
+      simulationMode: summary.simulationMode,
+      campaigns: summary.campaigns,
+    }
   },
 
-  async enviarRecordatorio(member: SocioCobranza, texto: string): Promise<ResultadoEnvioMock> {
-    // TODO: reemplazar por POST /api/admin/cobranzas/campanias cuando exista backend.
-    return sendReminderMock(member, texto)
+  async listarCandidatos(params?: { search?: string; estado_cuota?: string }): Promise<SocioCobranza[]> {
+    const response = await collectionsService.getDebtors(params)
+    return response.debtors
+  },
+
+  async previsualizarMensaje(campaignId: CampaniaCobranzaId, socioId?: string): Promise<string> {
+    const preview = await collectionsService.preview(campaignId, socioId)
+    return preview.renderedMessage
+  },
+
+  async enviarRecordatorio(
+    member: SocioCobranza,
+    _texto: string,
+    campaignId: CampaniaCobranzaId,
+  ): Promise<ResultadoEnvioMock> {
+    try {
+      await collectionsService.simulate(campaignId, member.id, 'whatsapp')
+      return { ok: true }
+    } catch (error) {
+      if (error instanceof ApiError) {
+        const telefonoError = error.validationErrors?.telefono?.[0]
+        return {
+          ok: false,
+          error: telefonoError ?? error.message,
+        }
+      }
+
+      return {
+        ok: false,
+        error: error instanceof Error ? error.message : 'No se pudo completar el envío simulado',
+      }
+    }
   },
 
   async obtenerHistorial(): Promise<CampanaHistorial[]> {
