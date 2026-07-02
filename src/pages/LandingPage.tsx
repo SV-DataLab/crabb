@@ -13,7 +13,7 @@ import { LandingNavbar } from '../features/landing/components/LandingNavbar'
 import { LANDING_IMAGES } from '../features/landing/constants'
 import { ApiError } from '../lib/apiClient'
 import { institutionalService } from '../services/institutionalService'
-import type { ActionLink } from '../types/institutional'
+import type { ActionLink, InstitutionalContent } from '../types/institutional'
 
 const publicNavItems = [
   { label: 'Inicio', href: '#inicio' },
@@ -33,9 +33,7 @@ const heroSecondaryCta: ActionLink = {
 }
 
 export function LandingPage() {
-  const [content, setContent] = useState<Awaited<ReturnType<typeof getInstitutionalContentWithFallback>> | null>(
-    null,
-  )
+  const [content, setContent] = useState<InstitutionalContent | null>(null)
   const [isLoadingInstitutionalContent, setIsLoadingInstitutionalContent] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
