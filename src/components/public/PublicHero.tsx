@@ -43,7 +43,7 @@ const TITLE_LINE_ANIMATION_DELAYS = ['80ms', '160ms', '240ms', '320ms'] as const
 const fallbackHeroContent = {
   badge: CANONICAL_HERO_BADGE,
   description:
-    'Representamos, acompañamos y fortalecemos al sector automotor regional, promoviendo la profesionalización, la innovación y el desarrollo sostenible.',
+    'Representamos, acompañamos y fortalecemos al sector automotor regional, promoviendo la profesionalización, la innovación y el desarrollo sostenible de talleres, comercios y profesionales vinculados al rubro.',
 }
 
 const fallbackHeroImageAlt = 'Representación del ecosistema automotor de CRABB'
@@ -130,13 +130,13 @@ export function PublicHero({
 
   const primaryLink: ActionLink = {
     ...primaryCta,
-    label: primaryCta.label || 'CONOCÉ NUESTROS SERVICIOS',
+    label: primaryCta.label || 'Conocer servicios',
     url: primaryCta.url || '#servicios',
   }
 
   const secondaryLink: ActionLink = {
     ...secondaryCta,
-    label: secondaryCta.label || 'CONTACTANOS',
+    label: secondaryCta.label || 'Contacto institucional',
     url: secondaryCta.url || '#contacto',
   }
 
