@@ -153,14 +153,7 @@ export function PublicHeader({ navItems }: PublicHeaderProps) {
               className="inline-flex w-fit rounded-full border border-sky-300/35 px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-sky-100 transition hover:bg-white/10"
               onClick={() => setMenuOpen(false)}
             >
-              Asociarme
-            </Link>
-            <Link
-              to="/registro-socio"
-              className="inline-flex w-fit rounded-full border border-white/20 px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-slate-100 transition hover:bg-white/10"
-              onClick={() => setMenuOpen(false)}
-            >
-              Activar cuenta
+              Asociarme / Activar cuenta
             </Link>
             <Link
               to="/login"

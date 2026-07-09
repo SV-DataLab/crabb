@@ -6,13 +6,19 @@ export class ApiError extends Error {
   status: number
   code?: string
   validationErrors?: ApiValidationErrors
+  responseBody?: unknown
 
-  constructor(message: string, status: number, options?: { code?: string; validationErrors?: ApiValidationErrors }) {
+  constructor(
+    message: string,
+    status: number,
+    options?: { code?: string; validationErrors?: ApiValidationErrors; responseBody?: unknown },
+  ) {
     super(message)
     this.name = 'ApiError'
     this.status = status
     this.code = options?.code
     this.validationErrors = options?.validationErrors
+    this.responseBody = options?.responseBody
   }
 }
 
@@ -93,6 +99,7 @@ function normalizeApiError(response: Response, body: unknown): ApiError {
   return new ApiError(message, response.status, {
     code: normalized.code,
     validationErrors: normalized.errors,
+    responseBody: body,
   })
 }
 

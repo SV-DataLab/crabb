@@ -87,15 +87,9 @@ export function LoginPage() {
 
         <div className="mt-6 space-y-3 border-t border-slate-200 pt-6 text-center text-sm text-slate-600">
           <p>
-            ¿Ya sos socio y no tenés cuenta?{' '}
-            <Link to="/registro-socio" className="font-medium text-blue-700 hover:text-blue-900">
-              Activar cuenta de socio
-            </Link>
-          </p>
-          <p>
-            ¿Querés asociarte a CRABB?{' '}
+            ¿Querés asociarte o activar tu cuenta de socio?{' '}
             <Link to="/asociarme" className="font-medium text-blue-700 hover:text-blue-900">
-              Solicitar asociación
+              Asociarme / Activar mi cuenta
             </Link>
           </p>
         </div>
