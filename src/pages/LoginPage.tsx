@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { ApiError } from '../lib/apiClient'
 import { useAuth } from '../hooks/useAuth'
+import { getDefaultAuthenticatedPath } from '../utils/socioAccess'
 
 export function LoginPage() {
   const navigate = useNavigate()
@@ -18,8 +19,8 @@ export function LoginPage() {
     setSubmitting(true)
 
     try {
-      await login({ email, password })
-      navigate('/dashboard', { replace: true })
+      const currentUser = await login({ email, password })
+      navigate(getDefaultAuthenticatedPath(currentUser), { replace: true })
     } catch (error) {
       if (error instanceof ApiError && error.status === 422 && error.validationErrors) {
         const firstField = Object.keys(error.validationErrors)[0]

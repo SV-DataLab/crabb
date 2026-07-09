@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { Card } from '../ui/Card'
 import { useAuth } from '../../hooks/useAuth'
+import { hasLinkedSocio } from '../../utils/socioAccess'
 
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (
@@ -14,6 +15,7 @@ function InfoRow({ label, value }: { label: string; value: string }) {
 export function SocioDashboard() {
   const { user } = useAuth()
   const socio = user?.socio
+  const linked = hasLinkedSocio(user)
 
   const displayName = socio?.denominacionTaller || socio?.nombreApellido || user?.name || 'Socio CRABB'
 
@@ -23,9 +25,36 @@ export function SocioDashboard() {
         <p className="text-xs uppercase tracking-wide text-slate-400">Panel de socio</p>
         <h1 className="mt-1 text-xl font-semibold text-slate-900 md:text-2xl">Hola, {displayName}</h1>
         <p className="mt-2 text-sm text-slate-600">
-          Desde acá podés consultar tu información y buscar colegas del padrón CRABB.
+          Desde acá podés consultar tu carnet, actualizar tus datos y buscar colegas del padrón CRABB.
         </p>
       </header>
+
+      {!linked ? (
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-900">
+          Tu cuenta no está vinculada a un socio. Contactá a CRABB para activar tu carnet.
+        </div>
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Link
+            to="/mi-carnet"
+            className="rounded-2xl border border-sky-200 bg-sky-50 p-5 shadow-sm transition hover:border-sky-300 hover:shadow-md"
+          >
+            <h2 className="text-lg font-semibold text-sky-950">Ver mi carnet</h2>
+            <p className="mt-2 text-sm text-sky-900/80">
+              Mostrá tu carnet digital y el código QR de verificación.
+            </p>
+          </Link>
+          <Link
+            to="/mi-perfil"
+            className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5 shadow-sm transition hover:border-emerald-300 hover:shadow-md"
+          >
+            <h2 className="text-lg font-semibold text-emerald-950">Actualizar mis datos</h2>
+            <p className="mt-2 text-sm text-emerald-900/80">
+              Editá celular, emails, dirección y taller/comercio.
+            </p>
+          </Link>
+        </div>
+      )}
 
       <Card className="border-slate-200 shadow-md" title="Tu información">
         {socio ? (
@@ -38,7 +67,7 @@ export function SocioDashboard() {
           </dl>
         ) : (
           <p className="text-sm text-slate-600">
-            No encontramos un socio vinculado a tu usuario por email. Podés usar el directorio de colegas igualmente.
+            No encontramos un socio vinculado a tu usuario por email.
           </p>
         )}
       </Card>

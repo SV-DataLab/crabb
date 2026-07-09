@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import heroBlueprintCar from '../assets/hero-blueprint-car.png'
 import { ContactCommunitySection } from '../components/public/ContactCommunitySection'
+import { InstitutionalServicesSection } from '../components/public/InstitutionalServicesSection'
 import { PublicFooter } from '../components/public/PublicFooter'
 import { PublicHero } from '../components/public/PublicHero'
 import {
@@ -18,13 +19,14 @@ import type { ActionLink, InstitutionalContent } from '../types/institutional'
 const publicNavItems = [
   { label: 'Inicio', href: '#inicio' },
   { label: 'Nosotros', href: '#sobre-nosotros' },
+  { label: 'Servicios', href: '#servicios' },
   { label: 'Institucional', href: '/institucional' },
   { label: 'Contacto', href: '#contacto' },
 ]
 
 const heroPrimaryCta: ActionLink = {
   label: 'Conocer servicios',
-  url: '/institucional',
+  url: '#servicios',
 }
 
 const heroSecondaryCta: ActionLink = {
@@ -167,6 +169,7 @@ export function LandingPage() {
           </div>
 
           <AboutSection />
+          <InstitutionalServicesSection services={landing.services} />
         </div>
       </div>
 

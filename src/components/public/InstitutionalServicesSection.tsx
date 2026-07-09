@@ -1,4 +1,4 @@
-import type { ActionLink } from '../../types/institutional'
+import type { ActionLink, LandingService } from '../../types/institutional'
 import { PublicActionLink } from './PublicActionLink'
 
 const TRAINING_EXTERNAL_URL = 'https://faatra.org.ar/capacitaciones/snit'
@@ -11,6 +11,76 @@ type ServiceCard = {
   bullets: string[]
   cta: ActionLink
   icon: 'membresia' | 'data' | 'capacitacion' | 'auxilio'
+}
+
+type Props = {
+  services?: LandingService[]
+}
+
+function isUnsafePublicHref(href?: string) {
+  if (!href) return true
+  const normalized = href.toLowerCase().trim()
+  return (
+    normalized.includes('admin') ||
+    normalized.includes('/#/admin') ||
+    normalized.includes('/admin') ||
+    normalized.includes('login')
+  )
+}
+
+function mapLandingServiceToCard(service: LandingService, index: number): ServiceCard {
+  const fallbackCtas = [
+    { label: 'Más información', url: '/institucional' },
+    { label: 'Ver capacitaciones', url: TRAINING_EXTERNAL_URL },
+    { label: 'Data técnica', url: '/data-tecnica' },
+    { label: 'Consultar', url: '#contacto' },
+  ]
+  const fallback = fallbackCtas[index] ?? { label: 'Ver más', url: '#contacto' }
+
+  const rawHref = service.cta_href?.trim() || fallback.url
+  const trainingText = `${service.title} ${service.cta_label ?? ''} ${rawHref} ${service.icon ?? ''}`
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+
+  const href =
+    trainingText.includes('capacitacion') || trainingText.includes('capacitaciones')
+      ? TRAINING_EXTERNAL_URL
+      : isUnsafePublicHref(rawHref)
+        ? fallback.url
+        : rawHref
+
+  const iconMap: Record<string, ServiceCard['icon']> = {
+    representacion: 'membresia',
+    capacitacion: 'capacitacion',
+    data: 'data',
+    red: 'auxilio',
+  }
+
+  return {
+    key: `cms-${service.title}-${index}`,
+    title: service.title,
+    badge: 'Servicio institucional',
+    description: service.description,
+    bullets: [],
+    cta: {
+      label: service.cta_label?.trim() || fallback.label,
+      url: href,
+    },
+    icon: iconMap[service.icon ?? ''] ?? (['membresia', 'capacitacion', 'data', 'auxilio'][index % 4] as ServiceCard['icon']),
+  }
+}
+
+function resolveServiceCards(services?: LandingService[]): ServiceCard[] {
+  const visible = (services ?? [])
+    .filter((service) => service.visible !== false && service.title.trim())
+    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+
+  if (visible.length > 0) {
+    return visible.map(mapLandingServiceToCard)
+  }
+
+  return SERVICE_CARDS
 }
 
 const SERVICE_CARDS: ServiceCard[] = [
@@ -136,7 +206,9 @@ function CheckIcon() {
   )
 }
 
-export function InstitutionalServicesSection() {
+export function InstitutionalServicesSection({ services }: Props) {
+  const cards = resolveServiceCards(services)
+
   return (
     <section
       id="servicios"
@@ -163,7 +235,7 @@ export function InstitutionalServicesSection() {
         </div>
 
         <div className="mt-10 grid gap-5 sm:grid-cols-2">
-          {SERVICE_CARDS.map((card) => (
+          {cards.map((card) => (
             <article
               key={card.key}
               className="group flex h-full flex-col rounded-[1.35rem] border border-white/10 bg-white/[0.055] p-5 shadow-[0_18px_44px_-34px_rgba(2,12,31,0.85)] ring-1 ring-white/[0.04] backdrop-blur-md transition duration-300 hover:-translate-y-0.5 hover:border-sky-200/25 hover:bg-white/[0.08] sm:p-6"
@@ -180,16 +252,18 @@ export function InstitutionalServicesSection() {
               <h3 className="mt-4 text-xl font-semibold text-white">{card.title}</h3>
               <p className="mt-2 text-sm leading-7 text-sky-100/72">{card.description}</p>
 
-              <ul className="mt-4 space-y-2">
-                {card.bullets.map((bullet) => (
-                  <li key={bullet} className="flex items-start gap-2.5 text-sm text-sky-50/80">
-                    <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-sky-300/12 text-sky-100">
-                      <CheckIcon />
-                    </span>
-                    <span>{bullet}</span>
-                  </li>
-                ))}
-              </ul>
+              {card.bullets.length > 0 ? (
+                <ul className="mt-4 space-y-2">
+                  {card.bullets.map((bullet) => (
+                    <li key={bullet} className="flex items-start gap-2.5 text-sm text-sky-50/80">
+                      <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-sky-300/12 text-sky-100">
+                        <CheckIcon />
+                      </span>
+                      <span>{bullet}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
 
               <div className="mt-auto pt-5">
                 <PublicActionLink

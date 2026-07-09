@@ -22,7 +22,11 @@ import { TermsPage } from '../pages/TermsPage'
 import { BuscarColegasPage } from '../pages/BuscarColegasPage'
 import { PerfilSocioPage } from '../pages/PerfilSocioPage'
 import { SocioSolicitudesPage } from '../pages/SocioSolicitudesPage'
-import { AdminOnlyRoute, ProtectedRoute, PublicOnlyRoute } from './routeGuards'
+import { SocioCarnetPage } from '../pages/SocioCarnetPage'
+import { SocioPerfilPage } from '../pages/SocioPerfilPage'
+import { SocioUnlinkedAccountPage } from '../pages/SocioUnlinkedAccountPage'
+import { PublicCarnetPage } from '../pages/PublicCarnetPage'
+import { AdminOnlyRoute, ProtectedRoute, PublicOnlyRoute, SocioOnlyRoute } from './routeGuards'
 
 export const router = createBrowserRouter([
   {
@@ -40,6 +44,10 @@ export const router = createBrowserRouter([
   {
     path: '/eliminacion-de-datos',
     element: <DataDeletionPage />,
+  },
+  {
+    path: '/carnet/:token',
+    element: <PublicCarnetPage />,
   },
   {
     path: '/login',
@@ -91,6 +99,26 @@ export const router = createBrowserRouter([
           </AdminOnlyRoute>
         ) },
       { path: 'colegas', element: <BuscarColegasPage /> },
+      {
+        path: 'mi-carnet',
+        element: (
+          <SocioOnlyRoute>
+            <SocioCarnetPage />
+          </SocioOnlyRoute>
+        ),
+      },
+      {
+        path: 'mi-perfil',
+        element: (
+          <SocioOnlyRoute>
+            <SocioPerfilPage />
+          </SocioOnlyRoute>
+        ),
+      },
+      {
+        path: 'cuenta-sin-socio',
+        element: <SocioUnlinkedAccountPage />,
+      },
       {
         path: 'admin/solicitudes-socios',
         element: (

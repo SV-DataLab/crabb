@@ -19,6 +19,7 @@ export type AuthUser = {
   name: string
   email: string
   role: UserRole
+  socioId?: number | string | null
   socio?: LinkedSocio | null
 }
 

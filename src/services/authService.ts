@@ -76,12 +76,16 @@ export function normalizeUser(raw: unknown): AuthUser | null {
   const email = toStringOrEmpty(candidate.email)
   const roleRaw = toStringOrEmpty(candidate.role).trim().toLowerCase()
   const socio = normalizeLinkedSocio(candidate.socio)
+  const socioIdRaw = firstDefined(candidate.socio_id, candidate.socioId, socio?.id)
+  const socioId =
+    typeof socioIdRaw === 'string' || typeof socioIdRaw === 'number' ? socioIdRaw : null
 
   return {
     id,
     name,
     email,
     role: (roleRaw || 'socio') as AuthUser['role'],
+    socioId,
     socio,
   }
 }

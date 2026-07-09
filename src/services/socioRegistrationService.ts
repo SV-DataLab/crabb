@@ -154,7 +154,7 @@ function mapActivationError(error: unknown): never {
 
     if (kind === 'socio_not_found') {
       throw new SocioAccountActivationError(
-        'No encontramos un socio con esos datos. Podés completar la solicitud de asociación.',
+        'No encontramos un socio con esos datos. Contactá a CRABB.',
         error.status,
         { code: error.code, kind },
       )
@@ -232,21 +232,50 @@ function normalizeJoinRequestResponse(body: unknown): SocioJoinRequestResponse {
 function normalizeActivationResponse(body: unknown): SocioAccountActivationResponse {
   if (!isRecord(body)) return {}
 
-  const userRaw = body.user
-  if (!isRecord(userRaw)) {
-    return { message: typeof body.message === 'string' ? body.message : undefined }
-  }
+  const dataRaw = isRecord(body.data) ? body.data : null
+  const token =
+    typeof body.token === 'string'
+      ? body.token
+      : typeof body.access_token === 'string'
+        ? body.access_token
+        : dataRaw && typeof dataRaw.token === 'string'
+          ? dataRaw.token
+          : dataRaw && typeof dataRaw.access_token === 'string'
+            ? dataRaw.access_token
+            : undefined
 
-  const id = userRaw.id
-  const role = userRaw.role
+  const userRaw = firstDefined(body.user, dataRaw?.user)
+  const estadoRaw = firstDefined(body.estado, dataRaw?.estado)
+  const pendingApproval =
+    typeof estadoRaw === 'string' && estadoRaw.trim().toLowerCase() === 'pendiente'
+
+  let user: SocioAccountActivationResponse['user']
+  if (isRecord(userRaw)) {
+    const id = userRaw.id
+    const role = userRaw.role
+    if ((typeof id === 'string' || typeof id === 'number') && typeof role === 'string') {
+      user = {
+        id,
+        role,
+        email: typeof userRaw.email === 'string' ? userRaw.email : undefined,
+        name: typeof userRaw.name === 'string' ? userRaw.name : undefined,
+        socio_id: firstDefined(userRaw.socio_id, userRaw.socioId) as number | string | null | undefined,
+        socio: userRaw.socio,
+      }
+    }
+  }
 
   return {
     message: typeof body.message === 'string' ? body.message : undefined,
-    user:
-      (typeof id === 'string' || typeof id === 'number') && typeof role === 'string'
-        ? { id, role }
-        : undefined,
+    token,
+    access_token: typeof body.access_token === 'string' ? body.access_token : undefined,
+    pendingApproval: pendingApproval && !token,
+    user,
   }
+}
+
+function firstDefined<T>(...values: T[]): T | undefined {
+  return values.find((value) => value !== undefined)
 }
 
 export const socioRegistrationService = {
