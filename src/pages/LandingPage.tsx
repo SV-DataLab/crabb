@@ -4,6 +4,7 @@ import { ContactCommunitySection } from '../components/public/ContactCommunitySe
 import { InstitutionalServicesSection } from '../components/public/InstitutionalServicesSection'
 import { PublicFooter } from '../components/public/PublicFooter'
 import { PublicHero } from '../components/public/PublicHero'
+import { isSafeActionUrl } from '../lib/actionLinks'
 import {
   getInstitutionalContentWithFallback,
   institutionalPreviewFooterLinkGroups,
@@ -32,6 +33,17 @@ const heroPrimaryCta: ActionLink = {
 const heroSecondaryCta: ActionLink = {
   label: 'Contacto institucional',
   url: '#contacto',
+}
+
+function resolveHeroCta(configured: ActionLink | undefined, fallback: ActionLink): ActionLink {
+  const label = configured?.label?.trim() ?? ''
+  const url = configured?.url?.trim() ?? ''
+
+  if (label && url && isSafeActionUrl(url)) {
+    return { label, url }
+  }
+
+  return fallback
 }
 
 export function LandingPage() {
@@ -157,8 +169,8 @@ export function LandingPage() {
               badge={landing.hero.badge}
               title={landing.hero.title}
               description={landing.hero.description}
-              primaryCta={heroPrimaryCta}
-              secondaryCta={heroSecondaryCta}
+              primaryCta={resolveHeroCta(landing.hero.primary_cta, heroPrimaryCta)}
+              secondaryCta={resolveHeroCta(landing.hero.secondary_cta, heroSecondaryCta)}
               imageUrl={effectiveHeroImageUrl}
               fallbackImageUrl={heroBlueprintCar}
               imageAlt={heroImageAlt}
