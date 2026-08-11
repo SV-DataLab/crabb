@@ -12,6 +12,9 @@ import { AdminSitioWebPortadaPage } from '../pages/AdminSitioWebPortadaPage'
 import { AdminSitioWebServiciosPage } from '../pages/AdminSitioWebServiciosPage'
 import { AdminSitioWebFooterPage } from '../pages/AdminSitioWebFooterPage'
 import { AdminSitioWebContactoRedesPage } from '../pages/AdminSitioWebContactoRedesPage'
+import { AdminSitioWebNavegacionPage } from '../pages/AdminSitioWebNavegacionPage'
+import { AdminSitioWebOportunidadesPage } from '../pages/AdminSitioWebOportunidadesPage'
+import { AdminSitioWebSobreCrabbPage } from '../pages/AdminSitioWebSobreCrabbPage'
 import { DataDeletionPage } from '../pages/DataDeletionPage'
 import { LandingPage } from '../pages/LandingPage'
 import { LoginPage } from '../pages/LoginPage'
@@ -192,10 +195,34 @@ export const router = createBrowserRouter([
         ),
       },
       {
+        path: 'admin/sitio-web/sobre-crabb',
+        element: (
+          <AdminOnlyRoute>
+            <AdminSitioWebSobreCrabbPage />
+          </AdminOnlyRoute>
+        ),
+      },
+      {
+        path: 'admin/sitio-web/navegacion',
+        element: (
+          <AdminOnlyRoute>
+            <AdminSitioWebNavegacionPage />
+          </AdminOnlyRoute>
+        ),
+      },
+      {
+        path: 'admin/sitio-web/oportunidades',
+        element: (
+          <AdminOnlyRoute>
+            <AdminSitioWebOportunidadesPage />
+          </AdminOnlyRoute>
+        ),
+      },
+      {
         path: 'admin',
         element: (
           <AdminOnlyRoute>
-            <Navigate to="/admin/institucional" replace />
+            <Navigate to="/admin/sitio-web" replace />
           </AdminOnlyRoute>
         ),
       },

@@ -7,7 +7,7 @@ import { createEmptyInstitutionalContent, institutionalService } from '../servic
 import type { InstitutionalContent, LandingHero } from '../types/institutional'
 
 const EMPTY_ADMIN_MESSAGE =
-  'No hay contenido institucional cargado. Guardá una primera versión desde Contenido institucional.'
+  'No hay contenido institucional cargado. Guardá una primera versión desde Sitio Web.'
 
 const fallbackHeroImageAlt = 'Imagen institucional de CRABB'
 
@@ -123,16 +123,21 @@ export function AdminSitioWebPortadaPage() {
     setSuccessMessage(null)
 
     const sanitizedHero = sanitizeHero(hero)
-    const payload: InstitutionalContent = {
-      ...content,
-      landing: {
-        ...content.landing,
-        hero: sanitizedHero,
-      },
-    }
 
     try {
-      const updated = await institutionalService.updateInstitutionalContent(payload)
+      const updated = await institutionalService.updateInstitutionalPartial({
+        landing: {
+          hero: sanitizedHero,
+          intro: {
+            title: sanitizedHero.title,
+            description: sanitizedHero.description,
+            badge: sanitizedHero.badge,
+            subtitle: sanitizedHero.subtitle,
+            primary_cta: sanitizedHero.primary_cta,
+            secondary_cta: sanitizedHero.secondary_cta,
+          },
+        },
+      })
       setContent(updated)
       setHero(cloneHero(updated.landing.hero))
       setSuccessMessage('Portada actualizada correctamente.')

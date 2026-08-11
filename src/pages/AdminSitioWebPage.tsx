@@ -1,113 +1,157 @@
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Badge } from '../components/ui/Badge'
 import { Card } from '../components/ui/Card'
 import { SectionHeader } from '../components/ui/SectionHeader'
+import { ApiError } from '../lib/apiClient'
+import { createEmptyInstitutionalContent, institutionalService } from '../services/institutionalService'
+import type { InstitutionalContent } from '../types/institutional'
 
 type SitioWebModule = {
   id: string
   title: string
   description: string
-  path?: string
-  available?: boolean
+  path: string
+  status: string
 }
 
-const sitioWebModules: SitioWebModule[] = [
-  {
-    id: 'portada',
-    title: 'Portada',
-    description: 'Editar título principal, descripción, botones e imagen del inicio.',
-    path: '/admin/sitio-web/portada',
-    available: true,
-  },
-  {
-    id: 'servicios',
-    title: 'Servicios',
-    description: 'Editar las tarjetas de servicios visibles en la landing pública.',
-    path: '/admin/sitio-web/servicios',
-    available: true,
-  },
-  {
-    id: 'programas-destacados',
-    title: 'Programas destacados',
-    description:
-      'Editar campaña de inscripción, Data Técnica, Capacitaciones, CRABB Auxilio y Oportunidades.',
-  },
-  {
-    id: 'contacto-redes',
-    title: 'Contacto y redes',
-    description: 'Editar dirección, email, teléfono, horarios y redes sociales.',
-    path: '/admin/sitio-web/contacto-redes',
-    available: true,
-  },
-  {
-    id: 'footer',
-    title: 'Footer',
-    description: 'Editar información del pie de página, navegación y derechos reservados.',
-    path: '/admin/sitio-web/footer',
-    available: true,
-  },
-  {
-    id: 'visibilidad',
-    title: 'Visibilidad',
-    description: 'Activar o desactivar secciones visibles en la landing pública.',
-  },
-]
+function moduleStatus(content: InstitutionalContent): SitioWebModule[] {
+  const visibleServices = content.landing.services.filter((item) => item.visible !== false && item.title.trim())
+  const visibleNav = content.landing.navigation.items.filter((item) => item.visible !== false && item.label.trim())
+  const legalLinks = content.footer.legal_links ?? []
+  const aboutTitle = content.landing.about.title.trim()
+  const opportunitiesTitle = content.landing.opportunities.title.trim()
+
+  return [
+    {
+      id: 'portada',
+      title: 'Portada',
+      description: 'Hero, títulos y llamadas a la acción',
+      path: '/admin/sitio-web/portada',
+      status: content.landing.hero.title.trim() || 'Sin título',
+    },
+    {
+      id: 'navegacion',
+      title: 'Navegación',
+      description: 'Menú público y enlaces del header',
+      path: '/admin/sitio-web/navegacion',
+      status: `${visibleNav.length} enlace${visibleNav.length === 1 ? '' : 's'} visible${visibleNav.length === 1 ? '' : 's'}`,
+    },
+    {
+      id: 'sobre-crabb',
+      title: 'Sobre CRABB',
+      description: 'Contenido institucional principal de la landing',
+      path: '/admin/sitio-web/sobre-crabb',
+      status: aboutTitle || 'Sin contenido',
+    },
+    {
+      id: 'servicios',
+      title: 'Servicios',
+      description: 'Tarjetas visibles en la landing',
+      path: '/admin/sitio-web/servicios',
+      status: `${visibleServices.length} visible${visibleServices.length === 1 ? '' : 's'} · ${content.landing.services.length} total`,
+    },
+    {
+      id: 'oportunidades',
+      title: 'Oportunidades',
+      description: 'Contenido destacado (preparado para la landing)',
+      path: '/admin/sitio-web/oportunidades',
+      status: opportunitiesTitle || `${content.landing.opportunities.items.length} ítems`,
+    },
+    {
+      id: 'contacto-redes',
+      title: 'Contacto',
+      description: 'Datos institucionales y redes',
+      path: '/admin/sitio-web/contacto-redes',
+      status: content.contact.email.trim() || 'Sin email',
+    },
+    {
+      id: 'footer',
+      title: 'Footer',
+      description: 'Links legales y contenido inferior',
+      path: '/admin/sitio-web/footer',
+      status: `${legalLinks.length} enlace${legalLinks.length === 1 ? '' : 's'} legal${legalLinks.length === 1 ? '' : 'es'}`,
+    },
+  ]
+}
 
 export function AdminSitioWebPage() {
+  const [content, setContent] = useState<InstitutionalContent>(createEmptyInstitutionalContent)
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    let active = true
+
+    const loadContent = async () => {
+      setIsLoading(true)
+      setError(null)
+
+      try {
+        const response = await institutionalService.getAdminInstitutionalContent()
+        if (!active) return
+        setContent(response)
+      } catch (err) {
+        if (!active) return
+        if (err instanceof ApiError && err.status === 404) {
+          setContent(createEmptyInstitutionalContent())
+        } else if (err instanceof ApiError) {
+          setError(err.message)
+        } else {
+          setError('No se pudo cargar el resumen del sitio web.')
+        }
+      } finally {
+        if (active) setIsLoading(false)
+      }
+    }
+
+    void loadContent()
+
+    return () => {
+      active = false
+    }
+  }, [])
+
+  const modules = moduleStatus(content)
+
   return (
     <div className="space-y-4 md:space-y-6">
       <SectionHeader
         title="Sitio Web"
-        subtitle="Administrá el contenido visible de la landing pública de CRABB."
+        subtitle="Única superficie para editar el contenido visible de la landing pública."
       />
 
       <Card className="border-slate-200 shadow-md">
         <p className="text-sm text-slate-600">
-          Desde acá podés editar la web pública sin mezclarlo con el contenido institucional interno.
-          La edición completa sigue disponible también en{' '}
-          <span className="font-medium text-slate-800">Contenido institucional</span>.
+          Cada módulo guarda solo su sección. Editar Footer no borra Hero, y editar Servicios no borra
+          Sobre CRABB.
         </p>
       </Card>
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        {sitioWebModules.map((module) => {
-          if (module.available && module.path) {
-            return (
-              <Link
-                key={module.id}
-                to={module.path}
-                className="group block text-left"
-              >
-                <Card className="h-full border-slate-200 shadow-md transition group-hover:border-blue-200 group-hover:shadow-md">
-                  <div className="flex items-start justify-between gap-3">
-                    <h3 className="text-base font-semibold text-slate-900">{module.title}</h3>
-                    <Badge tone="green">Disponible</Badge>
-                  </div>
-                  <p className="mt-2 text-sm leading-relaxed text-slate-600">{module.description}</p>
-                </Card>
-              </Link>
-            )
-          }
+      {error ? (
+        <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">{error}</div>
+      ) : null}
 
-          return (
-            <button
-              key={module.id}
-              type="button"
-              disabled
-              aria-disabled="true"
-              className="group cursor-not-allowed text-left"
-            >
-              <Card className="h-full border-slate-200 shadow-md transition group-hover:border-slate-300">
+      {isLoading ? (
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-600 shadow-md">
+          Cargando módulos del sitio web...
+        </div>
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {modules.map((module) => (
+            <Link key={module.id} to={module.path} className="group block text-left">
+              <Card className="h-full border-slate-200 shadow-md transition group-hover:border-blue-200 group-hover:shadow-md">
                 <div className="flex items-start justify-between gap-3">
                   <h3 className="text-base font-semibold text-slate-900">{module.title}</h3>
-                  <Badge tone="yellow">Próximamente</Badge>
+                  <Badge tone="green">Editar</Badge>
                 </div>
                 <p className="mt-2 text-sm leading-relaxed text-slate-600">{module.description}</p>
+                <p className="mt-3 text-xs font-medium text-slate-500">{module.status}</p>
               </Card>
-            </button>
-          )
-        })}
-      </div>
+            </Link>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

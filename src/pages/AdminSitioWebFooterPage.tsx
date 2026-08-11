@@ -8,7 +8,7 @@ import { createEmptyInstitutionalContent, institutionalService } from '../servic
 import type { FooterContent, FooterLegalLink, InstitutionalContent } from '../types/institutional'
 
 const EMPTY_ADMIN_MESSAGE =
-  'No hay contenido institucional cargado. Guardá una primera versión desde Contenido institucional.'
+  'No hay contenido institucional cargado. Guardá una primera versión desde Sitio Web.'
 
 const emptyLegalLink: FooterLegalLink = {
   label: '',
@@ -241,13 +241,11 @@ export function AdminSitioWebFooterPage() {
     setSuccessMessage(null)
 
     const sanitizedFooter = sanitizeFooter(footer)
-    const payload: InstitutionalContent = {
-      ...content,
-      footer: sanitizedFooter,
-    }
 
     try {
-      const updated = await institutionalService.updateInstitutionalContent(payload)
+      const updated = await institutionalService.updateInstitutionalPartial({
+        footer: sanitizedFooter,
+      })
       const updatedFooter = sanitizeFooter(cloneFooter(updated.footer))
       setContent(updated)
       setFooter(updatedFooter)

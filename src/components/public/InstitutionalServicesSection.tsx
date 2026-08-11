@@ -1,4 +1,5 @@
 import type { ActionLink, LandingService } from '../../types/institutional'
+import { isPublicCmsUrl } from '../../lib/actionLinks'
 import { PublicActionLink } from './PublicActionLink'
 
 const TRAINING_EXTERNAL_URL = 'https://faatra.org.ar/capacitaciones/snit'
@@ -17,17 +18,6 @@ type Props = {
   services?: LandingService[]
 }
 
-function isUnsafePublicHref(href?: string) {
-  if (!href) return true
-  const normalized = href.toLowerCase().trim()
-  return (
-    normalized.includes('admin') ||
-    normalized.includes('/#/admin') ||
-    normalized.includes('/admin') ||
-    normalized.includes('login')
-  )
-}
-
 function mapLandingServiceToCard(service: LandingService, index: number): ServiceCard {
   const fallbackCtas = [
     { label: 'Más información', url: '/institucional' },
@@ -38,17 +28,7 @@ function mapLandingServiceToCard(service: LandingService, index: number): Servic
   const fallback = fallbackCtas[index] ?? { label: 'Ver más', url: '#contacto' }
 
   const rawHref = service.cta_href?.trim() || fallback.url
-  const trainingText = `${service.title} ${service.cta_label ?? ''} ${rawHref} ${service.icon ?? ''}`
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-
-  const href =
-    trainingText.includes('capacitacion') || trainingText.includes('capacitaciones')
-      ? TRAINING_EXTERNAL_URL
-      : isUnsafePublicHref(rawHref)
-        ? fallback.url
-        : rawHref
+  const href = isPublicCmsUrl(rawHref) ? rawHref : fallback.url
 
   const iconMap: Record<string, ServiceCard['icon']> = {
     representacion: 'membresia',

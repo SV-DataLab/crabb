@@ -10,10 +10,14 @@ import type {
   InstitutionalPageContent,
   InstitutionalUpdatePayload,
   InstitutionalVisibility,
+  InstitutionalPartialUpdate,
+  LandingAbout,
   LandingCampaignSection,
   LandingContent,
   LandingFinalCta,
   LandingHero,
+  LandingNavigation,
+  LandingNavItem,
   LandingSection,
   LandingService,
   SocialLink,
@@ -295,6 +299,8 @@ function toBackendInstitutionalPayload(content: InstitutionalContent): BackendIn
       capacitaciones: training,
       auxilio,
       crabb_auxilio: auxilio,
+      navigation: content.landing.navigation,
+      about: content.landing.about,
       opportunities: opportunitiesPayload,
       final_cta: finalCtaPayload,
       services: content.landing.services.map((service) => ({
@@ -453,6 +459,45 @@ function normalizeLandingFinalCta(value: unknown): LandingFinalCta {
   }
 }
 
+function normalizeLandingAbout(value: unknown): LandingAbout {
+  const source = asObject(value)
+  return {
+    eyebrow: asString(source.eyebrow),
+    title: asString(source.title),
+    description: asString(source.description),
+    body: asString(source.body),
+    image_url: asString(source.image_url),
+    image_alt: asString(source.image_alt),
+    visible: Object.prototype.hasOwnProperty.call(source, 'visible')
+      ? asBoolean(source.visible, true)
+      : true,
+  }
+}
+
+function normalizeLandingNavItem(value: unknown, index = 0): LandingNavItem {
+  const source = asObject(value)
+  return {
+    label: asString(source.label),
+    url: asString(source.url ?? source.href),
+    order: asOptionalNumber(source.order) ?? index + 1,
+    visible: Object.prototype.hasOwnProperty.call(source, 'visible')
+      ? asBoolean(source.visible, true)
+      : true,
+  }
+}
+
+function normalizeLandingNavigation(value: unknown): LandingNavigation {
+  const source = asObject(value)
+  const itemsRaw = source.items
+
+  return {
+    brand_eyebrow: asString(source.brand_eyebrow),
+    brand_name: asString(source.brand_name),
+    logo_url: asString(source.logo_url),
+    items: Array.isArray(itemsRaw) ? itemsRaw.map((item, index) => normalizeLandingNavItem(item, index)) : [],
+  }
+}
+
 function normalizeLanding(value: unknown): LandingContent {
   const source = fromBackendLanding(value)
   const servicesRaw = source.services
@@ -460,6 +505,8 @@ function normalizeLanding(value: unknown): LandingContent {
 
   return {
     hero: normalizeLandingHero(source.hero),
+    navigation: normalizeLandingNavigation(source.navigation),
+    about: normalizeLandingAbout(source.about),
     services: Array.isArray(servicesRaw)
       ? servicesRaw.map(normalizeLandingService)
       : Array.isArray(legacyServiceCardsRaw)
@@ -611,6 +658,21 @@ export function createEmptyInstitutionalContent(): InstitutionalContent {
         description: '',
         items: [],
       },
+      navigation: {
+        brand_eyebrow: '',
+        brand_name: '',
+        logo_url: '',
+        items: [],
+      },
+      about: {
+        eyebrow: '',
+        title: '',
+        description: '',
+        body: '',
+        image_url: '',
+        image_alt: '',
+        visible: true,
+      },
       opportunities: {
         title: '',
         description: '',
@@ -733,6 +795,15 @@ export const institutionalService = {
     const response = await apiRequest<unknown>('/admin/institutional', {
       method: 'PUT',
       body: backendPayload,
+    })
+
+    return normalizeInstitutionalContent(extractPayload(response))
+  },
+
+  async updateInstitutionalPartial(patch: InstitutionalPartialUpdate): Promise<InstitutionalContent> {
+    const response = await apiRequest<unknown>('/admin/institutional', {
+      method: 'PUT',
+      body: patch,
     })
 
     return normalizeInstitutionalContent(extractPayload(response))

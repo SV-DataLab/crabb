@@ -8,7 +8,7 @@ import { createEmptyInstitutionalContent, institutionalService } from '../servic
 import type { InstitutionalContact, InstitutionalContent, SocialLink } from '../types/institutional'
 
 const EMPTY_ADMIN_MESSAGE =
-  'No hay contenido institucional cargado. Guardá una primera versión desde Contenido institucional.'
+  'No hay contenido institucional cargado. Guardá una primera versión desde Sitio Web.'
 
 const emptySocialLink: SocialLink = {
   platform: '',
@@ -293,14 +293,11 @@ export function AdminSitioWebContactoRedesPage() {
     setError(null)
     setSuccessMessage(null)
 
-    const payload: InstitutionalContent = {
-      ...content,
-      contact: sanitizedContact,
-      social_links: sanitizedSocialLinks,
-    }
-
     try {
-      const updated = await institutionalService.updateInstitutionalContent(payload)
+      const updated = await institutionalService.updateInstitutionalPartial({
+        contact: sanitizedContact,
+        social_links: sanitizedSocialLinks,
+      })
       const updatedContact = sanitizeContact(cloneContact(updated.contact))
       const updatedLinks = normalizeSocialLinkOrders(cloneSocialLinks(updated.social_links))
       setContent(updated)

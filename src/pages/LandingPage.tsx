@@ -4,7 +4,7 @@ import { ContactCommunitySection } from '../components/public/ContactCommunitySe
 import { InstitutionalServicesSection } from '../components/public/InstitutionalServicesSection'
 import { PublicFooter } from '../components/public/PublicFooter'
 import { PublicHero } from '../components/public/PublicHero'
-import { isSafeActionUrl } from '../lib/actionLinks'
+import { isPublicCmsUrl, isSafeActionUrl } from '../lib/actionLinks'
 import {
   getInstitutionalContentWithFallback,
   institutionalPreviewFooterLinkGroups,
@@ -15,7 +15,7 @@ import { LandingNavbar } from '../features/landing/components/LandingNavbar'
 import { LANDING_IMAGES } from '../features/landing/constants'
 import { ApiError } from '../lib/apiClient'
 import { institutionalService } from '../services/institutionalService'
-import type { ActionLink, InstitutionalContent } from '../types/institutional'
+import type { ActionLink, InstitutionalContent, LandingNavigation } from '../types/institutional'
 
 const publicNavItems = [
   { label: 'Inicio', href: '#inicio' },
@@ -33,6 +33,16 @@ const heroPrimaryCta: ActionLink = {
 const heroSecondaryCta: ActionLink = {
   label: 'Contacto institucional',
   url: '#contacto',
+}
+
+function resolvePublicNav(navigation: LandingNavigation | undefined) {
+  const items = (navigation?.items ?? [])
+    .filter((item) => item.visible !== false)
+    .filter((item) => item.label?.trim() && isPublicCmsUrl(item.url ?? ''))
+    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+    .map((item) => ({ label: item.label.trim(), href: item.url.trim() }))
+
+  return items.length > 0 ? items : publicNavItems
 }
 
 function resolveHeroCta(configured: ActionLink | undefined, fallback: ActionLink): ActionLink {
@@ -114,6 +124,7 @@ export function LandingPage() {
   }
 
   const landing = content.landing
+  const navItems = resolvePublicNav(landing.navigation)
   const configuredImageUrl = landing.hero.image_url?.trim() ?? ''
   const shouldUseDefaultImage =
     !configuredImageUrl || configuredImageUrl === '/media/hero-crabb.jpg'
@@ -126,7 +137,12 @@ export function LandingPage() {
 
   return (
     <main className="min-h-screen w-full overflow-x-hidden bg-[#06111f]">
-      <LandingNavbar navItems={publicNavItems} />
+      <LandingNavbar
+        navItems={navItems}
+        brandEyebrow={landing.navigation.brand_eyebrow}
+        brandName={landing.navigation.brand_name}
+        logoUrl={landing.navigation.logo_url}
+      />
 
       <div className="relative isolate overflow-hidden bg-[#06111f] text-white">
         <div
@@ -180,7 +196,7 @@ export function LandingPage() {
             />
           </div>
 
-          <AboutSection />
+          <AboutSection about={landing.about} />
           <InstitutionalServicesSection services={landing.services} />
         </div>
       </div>

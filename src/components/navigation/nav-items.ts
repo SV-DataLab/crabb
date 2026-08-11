@@ -22,7 +22,7 @@ const adminNavItems: NavItem[] = [
   { label: 'Cuotas de socios', path: '/admin/cuotas' },
   { label: 'Gestión de cobranzas', path: '/admin/gestion-cobranzas' },
   { label: 'Sitio Web', path: '/admin/sitio-web' },
-  { label: 'Contenido institucional', path: '/admin/institucional' },
+  { label: 'Página institucional', path: '/admin/institucional' },
 ]
 
 export function getMainNavItems(role?: string, user?: AuthUser | null): NavItem[] {

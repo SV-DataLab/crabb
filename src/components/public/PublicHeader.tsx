@@ -8,11 +8,19 @@ export type PublicNavItem = {
 
 type PublicHeaderProps = {
   navItems: PublicNavItem[]
+  brandEyebrow?: string
+  brandName?: string
+  logoUrl?: string
 }
 
 const CRABB_LOGO_SRC = '/logo-crabb.jpg'
 
-export function PublicHeader({ navItems }: PublicHeaderProps) {
+export function PublicHeader({
+  navItems,
+  brandEyebrow = 'CÁMARA DE REPARACIÓN DE AUTOMOTORES',
+  brandName = 'Bahía Blanca',
+  logoUrl = CRABB_LOGO_SRC,
+}: PublicHeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false)
   const location = useLocation()
   const navigate = useNavigate()
@@ -69,14 +77,14 @@ export function PublicHeader({ navItems }: PublicHeaderProps) {
         <div className="flex flex-shrink-0 basis-auto items-center lg:basis-[36%]">
           <a href="#inicio" className="inline-flex items-center gap-3">
             <span className="inline-flex rounded-md bg-white/95 p-1.5 shadow-[0_8px_18px_rgba(2,6,23,0.14)] ring-1 ring-slate-200/70">
-              <img src={CRABB_LOGO_SRC} alt="CRABB" className="h-9 w-auto md:h-10.5" loading="eager" />
+              <img src={logoUrl || CRABB_LOGO_SRC} alt="CRABB" className="h-9 w-auto md:h-10.5" loading="eager" />
             </span>
             <div className="min-w-0 self-center">
               <p className="text-[9px] font-semibold uppercase tracking-[0.28em] text-sky-200/90 md:text-[10px]">
-                CÁMARA DE REPARACIÓN DE AUTOMOTORES
+                {brandEyebrow}
               </p>
               <p className="mt-0.5 text-sm font-semibold leading-tight text-white md:text-[0.95rem]">
-                Bahía Blanca
+                {brandName}
               </p>
             </div>
           </a>

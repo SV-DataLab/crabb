@@ -87,6 +87,21 @@ function cloneValues(values: InstitutionalContent): InstitutionalContent {
               region_label: '',
             },
       },
+      navigation: {
+        brand_eyebrow: values.landing.navigation?.brand_eyebrow ?? '',
+        brand_name: values.landing.navigation?.brand_name ?? '',
+        logo_url: values.landing.navigation?.logo_url ?? '',
+        items: (values.landing.navigation?.items ?? []).map((item) => ({ ...item })),
+      },
+      about: {
+        eyebrow: values.landing.about?.eyebrow ?? '',
+        title: values.landing.about?.title ?? '',
+        description: values.landing.about?.description ?? '',
+        body: values.landing.about?.body ?? '',
+        image_url: values.landing.about?.image_url ?? '',
+        image_alt: values.landing.about?.image_alt ?? '',
+        visible: values.landing.about?.visible !== false,
+      },
       services: values.landing.services.map((item) => ({ ...item })),
       campaign: {
         ...values.landing.campaign,
@@ -511,6 +526,21 @@ export function InstitutionalForm({ initialValues, onSubmit, isSaving = false }:
             items: normalizeStringList(state.landing.hero.visual?.items ?? []),
             region_label: state.landing.hero.visual?.region_label?.trim() ?? '',
           },
+        },
+        navigation: {
+          brand_eyebrow: state.landing.navigation?.brand_eyebrow?.trim() ?? '',
+          brand_name: state.landing.navigation?.brand_name?.trim() ?? '',
+          logo_url: state.landing.navigation?.logo_url?.trim() ?? '',
+          items: (state.landing.navigation?.items ?? []).map((item) => ({ ...item })),
+        },
+        about: {
+          eyebrow: state.landing.about?.eyebrow?.trim() ?? '',
+          title: state.landing.about?.title?.trim() ?? '',
+          description: state.landing.about?.description?.trim() ?? '',
+          body: state.landing.about?.body?.trim() ?? '',
+          image_url: state.landing.about?.image_url?.trim() ?? '',
+          image_alt: state.landing.about?.image_alt?.trim() ?? '',
+          visible: state.landing.about?.visible !== false,
         },
         services: state.landing.services
           .map((item) => {
