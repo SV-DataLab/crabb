@@ -1,9 +1,12 @@
 import { useState, type FormEvent } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { useAuth } from '../../hooks/useAuth'
+import { normalizeUser } from '../../services/authService'
 import {
   SocioAccountActivationError,
   socioRegistrationService,
 } from '../../services/socioRegistrationService'
+import { getDefaultAuthenticatedPath } from '../../utils/socioAccess'
 import { normalizeDocument } from '../../utils/normalizeDocument'
 import { FormValidationErrors } from './FormValidationErrors'
 
@@ -39,6 +42,9 @@ export function SocioAccountActivationForm() {
   const [errorKind, setErrorKind] = useState<SocioAccountActivationError['kind'] | null>(null)
   const [validationErrors, setValidationErrors] = useState<Record<string, string[]> | undefined>()
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
+  const [successMode, setSuccessMode] = useState<'created' | 'pending' | null>(null)
+  const navigate = useNavigate()
+  const { login, establishSession } = useAuth()
 
   const updateField = (field: keyof ActivationFormState, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }))
@@ -79,10 +85,29 @@ export function SocioAccountActivationForm() {
         password_confirmation: form.password_confirmation,
       })
 
-      setSuccessMessage(
-        response.message ||
-          'Cuenta de socio creada correctamente. Ya podés iniciar sesión.',
-      )
+      if (response.pendingApproval) {
+        setSuccessMode('pending')
+        setSuccessMessage(
+          response.message || 'Solicitud enviada. CRABB debe aprobarla.',
+        )
+        return
+      }
+
+      const token = response.token || response.access_token
+      if (token) {
+        const initialUser = response.user ? normalizeUser(response.user) : undefined
+        const currentUser = await establishSession(token, initialUser ?? undefined)
+        navigate(getDefaultAuthenticatedPath(currentUser), { replace: true })
+        return
+      }
+
+      const currentUser = await login({
+        email: form.email.trim(),
+        password: form.password,
+      })
+      setSuccessMode('created')
+      setSuccessMessage(response.message || 'Cuenta creada correctamente.')
+      navigate(getDefaultAuthenticatedPath(currentUser), { replace: true })
     } catch (error) {
       if (error instanceof SocioAccountActivationError) {
         setErrorKind(error.kind)
@@ -98,7 +123,22 @@ export function SocioAccountActivationForm() {
     }
   }
 
-  if (successMessage) {
+  if (successMessage && successMode === 'pending') {
+    return (
+      <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-slate-800 shadow-xl shadow-black/10">
+        <h2 className="text-xl font-semibold text-amber-900">Solicitud enviada</h2>
+        <p className="mt-3 text-sm leading-7 text-amber-900/90">{successMessage}</p>
+        <Link
+          to="/login"
+          className="mt-6 inline-flex rounded-lg bg-amber-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-amber-800"
+        >
+          Ir a iniciar sesión
+        </Link>
+      </div>
+    )
+  }
+
+  if (successMessage && successMode === 'created') {
     return (
       <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-6 text-slate-800 shadow-xl shadow-black/10">
         <h2 className="text-xl font-semibold text-emerald-900">Cuenta activada</h2>

@@ -8,7 +8,7 @@ import { createEmptyInstitutionalContent, institutionalService } from '../servic
 import type { InstitutionalContent, LandingService } from '../types/institutional'
 
 const EMPTY_ADMIN_MESSAGE =
-  'No hay contenido institucional cargado. Guardá una primera versión desde Contenido institucional.'
+  'No hay contenido institucional cargado. Guardá una primera versión desde Sitio Web.'
 
 const ICON_OPTIONS: Array<{ value: NonNullable<LandingService['icon']>; label: string }> = [
   { value: 'representacion', label: 'Representación' },
@@ -239,16 +239,13 @@ export function AdminSitioWebServiciosPage() {
     setSuccessMessage(null)
 
     const sanitizedServices = sanitizeServices(services)
-    const payload: InstitutionalContent = {
-      ...content,
-      landing: {
-        ...content.landing,
-        services: sanitizedServices,
-      },
-    }
 
     try {
-      const updated = await institutionalService.updateInstitutionalContent(payload)
+      const updated = await institutionalService.updateInstitutionalPartial({
+        landing: {
+          services: sanitizedServices,
+        },
+      })
       const updatedServices = normalizeServiceOrders(cloneServices(updated.landing.services))
       setContent(updated)
       setServices(updatedServices)

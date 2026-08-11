@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { Navigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { isAdminRole } from '../utils/adminAccess'
+import { getDefaultAuthenticatedPath, hasLinkedSocio, isSocioUser } from '../utils/socioAccess'
 
 function FullScreenMessage({ message }: { message: string }) {
   return (
@@ -26,14 +27,14 @@ export function ProtectedRoute({ children }: { children: ReactNode }) {
 }
 
 export function PublicOnlyRoute({ children }: { children: ReactNode }) {
-  const { isAuthenticated, isInitializing } = useAuth()
+  const { isAuthenticated, isInitializing, user } = useAuth()
 
   if (isInitializing) {
     return <FullScreenMessage message="Cargando..." />
   }
 
   if (isAuthenticated) {
-    return <Navigate to="/dashboard" replace />
+    return <Navigate to={getDefaultAuthenticatedPath(user)} replace />
   }
 
   return <>{children}</>
@@ -52,6 +53,32 @@ export function AdminOnlyRoute({ children }: { children: ReactNode }) {
 
   if (!isAdminRole(user?.role)) {
     return <Navigate to="/dashboard" replace />
+  }
+
+  return <>{children}</>
+}
+
+export function SocioOnlyRoute({ children }: { children: ReactNode }) {
+  const { isAuthenticated, isInitializing, user } = useAuth()
+
+  if (isInitializing) {
+    return <FullScreenMessage message="Verificando permisos..." />
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />
+  }
+
+  if (isAdminRole(user?.role)) {
+    return <Navigate to="/dashboard" replace />
+  }
+
+  if (!isSocioUser(user)) {
+    return <Navigate to="/cuenta-sin-socio" replace />
+  }
+
+  if (!hasLinkedSocio(user)) {
+    return <Navigate to="/cuenta-sin-socio" replace />
   }
 
   return <>{children}</>

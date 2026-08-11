@@ -6,13 +6,19 @@ export class ApiError extends Error {
   status: number
   code?: string
   validationErrors?: ApiValidationErrors
+  responseBody?: unknown
 
-  constructor(message: string, status: number, options?: { code?: string; validationErrors?: ApiValidationErrors }) {
+  constructor(
+    message: string,
+    status: number,
+    options?: { code?: string; validationErrors?: ApiValidationErrors; responseBody?: unknown },
+  ) {
     super(message)
     this.name = 'ApiError'
     this.status = status
     this.code = options?.code
     this.validationErrors = options?.validationErrors
+    this.responseBody = options?.responseBody
   }
 }
 
@@ -23,6 +29,7 @@ type RequestOptions = {
   headers?: HeadersInit
   body?: unknown
   signal?: AbortSignal
+  skipAuth?: boolean
 }
 
 let getAuthToken: (() => string | null) | null = null
@@ -56,13 +63,13 @@ function buildUrl(path: string): string {
   return `${env.apiBaseUrl}${normalizedPath}`
 }
 
-function buildHeaders(customHeaders?: HeadersInit, body?: unknown): Headers {
+function buildHeaders(customHeaders?: HeadersInit, body?: unknown, skipAuth = false): Headers {
   const headers = new Headers(customHeaders)
   if (!headers.has('Accept')) {
     headers.set('Accept', 'application/json')
   }
 
-  const token = getAuthToken?.()
+  const token = skipAuth ? null : getAuthToken?.()
   if (token && !headers.has('Authorization')) {
     headers.set('Authorization', `Bearer ${token}`)
   }
@@ -92,13 +99,14 @@ function normalizeApiError(response: Response, body: unknown): ApiError {
   return new ApiError(message, response.status, {
     code: normalized.code,
     validationErrors: normalized.errors,
+    responseBody: body,
   })
 }
 
 export async function apiRequest<T>(path: string, options: RequestOptions = {}): Promise<T> {
   ensureEnv()
-  const { method = 'GET', headers: customHeaders, body, signal } = options
-  const headers = buildHeaders(customHeaders, body)
+  const { method = 'GET', headers: customHeaders, body, signal, skipAuth = false } = options
+  const headers = buildHeaders(customHeaders, body, skipAuth)
 
   const response = await fetch(buildUrl(path), {
     method,

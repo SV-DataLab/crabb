@@ -3,6 +3,8 @@ import type {
   InstitutionalAuthority,
   InstitutionalContent,
   InstitutionalVisibility,
+  LandingAbout,
+  LandingNavigation,
   LandingSection,
   LandingService,
 } from '../../types/institutional'
@@ -248,6 +250,32 @@ function mergeLandingSection(apiSection: LandingSection, fallbackSection: Landin
   }
 }
 
+function mergeAbout(apiAbout: LandingAbout | undefined, fallbackAbout: LandingAbout): LandingAbout {
+  return {
+    eyebrow: mergeString(apiAbout?.eyebrow ?? '', fallbackAbout.eyebrow),
+    title: mergeString(apiAbout?.title ?? '', fallbackAbout.title),
+    description: mergeString(apiAbout?.description ?? '', fallbackAbout.description),
+    body: mergeString(apiAbout?.body ?? '', fallbackAbout.body),
+    image_url: mergeString(apiAbout?.image_url ?? '', fallbackAbout.image_url ?? ''),
+    image_alt: mergeString(apiAbout?.image_alt ?? '', fallbackAbout.image_alt ?? ''),
+    visible: apiAbout?.visible !== false,
+  }
+}
+
+function mergeNavigation(
+  apiNavigation: LandingNavigation | undefined,
+  fallbackNavigation: LandingNavigation,
+): LandingNavigation {
+  const apiItems = (apiNavigation?.items ?? []).filter((item) => hasText(item.label) && hasText(item.url))
+
+  return {
+    brand_eyebrow: mergeString(apiNavigation?.brand_eyebrow ?? '', fallbackNavigation.brand_eyebrow),
+    brand_name: mergeString(apiNavigation?.brand_name ?? '', fallbackNavigation.brand_name),
+    logo_url: mergeString(apiNavigation?.logo_url ?? '', fallbackNavigation.logo_url ?? ''),
+    items: apiItems.length > 0 ? apiItems : fallbackNavigation.items,
+  }
+}
+
 function mergeHeroVisual(
   apiVisual: InstitutionalContent['landing']['hero']['visual'],
   fallbackVisual: InstitutionalContent['landing']['hero']['visual'],
@@ -285,6 +313,27 @@ export function mapPreviewContractToInstitutionalContent(
         image_alt: preview.landing.image_alt,
         values: preview.landing.values,
         visual: preview.landing.visual,
+      },
+      navigation: {
+        brand_eyebrow: 'CÁMARA DE REPARACIÓN DE AUTOMOTORES',
+        brand_name: 'Bahía Blanca',
+        logo_url: '',
+        items: [
+          { label: 'Inicio', url: '#inicio', order: 1, visible: true },
+          { label: 'Nosotros', url: '#sobre-nosotros', order: 2, visible: true },
+          { label: 'Servicios', url: '#servicios', order: 3, visible: true },
+          { label: 'Institucional', url: '/institucional', order: 4, visible: true },
+          { label: 'Contacto', url: '#contacto', order: 5, visible: true },
+        ],
+      },
+      about: {
+        eyebrow: 'Nosotros',
+        title: 'Sobre CRABB',
+        description: 'Una institución regional que representa, acompaña y fortalece al sector automotor.',
+        body: 'CRABB trabaja junto a talleres, comercios y profesionales vinculados al rubro automotor, promoviendo la capacitación, la información técnica, la gestión institucional y la vinculación entre socios de Bahía Blanca y la región.',
+        image_url: '',
+        image_alt: 'Institucional CRABB — sector automotor regional',
+        visible: true,
       },
       services: preview.landing.services,
       campaign: {
@@ -409,6 +458,8 @@ export function getInstitutionalContentWithFallback(
         values: mergeStringList(apiContent.landing.hero.values ?? [], fallback.landing.hero.values ?? []),
         visual: mergeHeroVisual(apiContent.landing.hero.visual, fallback.landing.hero.visual),
       },
+      navigation: mergeNavigation(apiContent.landing.navigation, fallback.landing.navigation),
+      about: mergeAbout(apiContent.landing.about, fallback.landing.about),
       services: mergeServices(apiContent.landing.services, fallback.landing.services),
       campaign: {
         ...mergeLandingSection(apiContent.landing.campaign, fallback.landing.campaign),
@@ -444,6 +495,7 @@ export function getInstitutionalContentWithFallback(
     footer: {
       copyright: mergeString(apiContent.footer.copyright, fallback.footer.copyright),
       description: mergeString(apiContent.footer.description, fallback.footer.description),
+      legal_links: apiContent.footer.legal_links,
     },
     visibility: {
       ...fallback.visibility,

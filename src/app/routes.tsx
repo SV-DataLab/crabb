@@ -12,6 +12,9 @@ import { AdminSitioWebPortadaPage } from '../pages/AdminSitioWebPortadaPage'
 import { AdminSitioWebServiciosPage } from '../pages/AdminSitioWebServiciosPage'
 import { AdminSitioWebFooterPage } from '../pages/AdminSitioWebFooterPage'
 import { AdminSitioWebContactoRedesPage } from '../pages/AdminSitioWebContactoRedesPage'
+import { AdminSitioWebNavegacionPage } from '../pages/AdminSitioWebNavegacionPage'
+import { AdminSitioWebOportunidadesPage } from '../pages/AdminSitioWebOportunidadesPage'
+import { AdminSitioWebSobreCrabbPage } from '../pages/AdminSitioWebSobreCrabbPage'
 import { DataDeletionPage } from '../pages/DataDeletionPage'
 import { LandingPage } from '../pages/LandingPage'
 import { LoginPage } from '../pages/LoginPage'
@@ -22,7 +25,11 @@ import { TermsPage } from '../pages/TermsPage'
 import { BuscarColegasPage } from '../pages/BuscarColegasPage'
 import { PerfilSocioPage } from '../pages/PerfilSocioPage'
 import { SocioSolicitudesPage } from '../pages/SocioSolicitudesPage'
-import { AdminOnlyRoute, ProtectedRoute, PublicOnlyRoute } from './routeGuards'
+import { SocioCarnetPage } from '../pages/SocioCarnetPage'
+import { SocioPerfilPage } from '../pages/SocioPerfilPage'
+import { SocioUnlinkedAccountPage } from '../pages/SocioUnlinkedAccountPage'
+import { PublicCarnetPage } from '../pages/PublicCarnetPage'
+import { AdminOnlyRoute, ProtectedRoute, PublicOnlyRoute, SocioOnlyRoute } from './routeGuards'
 
 export const router = createBrowserRouter([
   {
@@ -40,6 +47,10 @@ export const router = createBrowserRouter([
   {
     path: '/eliminacion-de-datos',
     element: <DataDeletionPage />,
+  },
+  {
+    path: '/carnet/:token',
+    element: <PublicCarnetPage />,
   },
   {
     path: '/login',
@@ -91,6 +102,26 @@ export const router = createBrowserRouter([
           </AdminOnlyRoute>
         ) },
       { path: 'colegas', element: <BuscarColegasPage /> },
+      {
+        path: 'mi-carnet',
+        element: (
+          <SocioOnlyRoute>
+            <SocioCarnetPage />
+          </SocioOnlyRoute>
+        ),
+      },
+      {
+        path: 'mi-perfil',
+        element: (
+          <SocioOnlyRoute>
+            <SocioPerfilPage />
+          </SocioOnlyRoute>
+        ),
+      },
+      {
+        path: 'cuenta-sin-socio',
+        element: <SocioUnlinkedAccountPage />,
+      },
       {
         path: 'admin/solicitudes-socios',
         element: (
@@ -164,10 +195,34 @@ export const router = createBrowserRouter([
         ),
       },
       {
+        path: 'admin/sitio-web/sobre-crabb',
+        element: (
+          <AdminOnlyRoute>
+            <AdminSitioWebSobreCrabbPage />
+          </AdminOnlyRoute>
+        ),
+      },
+      {
+        path: 'admin/sitio-web/navegacion',
+        element: (
+          <AdminOnlyRoute>
+            <AdminSitioWebNavegacionPage />
+          </AdminOnlyRoute>
+        ),
+      },
+      {
+        path: 'admin/sitio-web/oportunidades',
+        element: (
+          <AdminOnlyRoute>
+            <AdminSitioWebOportunidadesPage />
+          </AdminOnlyRoute>
+        ),
+      },
+      {
         path: 'admin',
         element: (
           <AdminOnlyRoute>
-            <Navigate to="/admin/institucional" replace />
+            <Navigate to="/admin/sitio-web" replace />
           </AdminOnlyRoute>
         ),
       },

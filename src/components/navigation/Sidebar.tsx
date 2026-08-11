@@ -21,7 +21,7 @@ function NavItemLink({ item }: { item: { label: string; path: string } }) {
 
 export function Sidebar() {
   const { user } = useAuth()
-  const mainItems = getMainNavItems(user?.role)
+  const mainItems = getMainNavItems(user?.role, user)
   const adminItems = getAdminNavItems(user?.role)
   const logoCrabbUrl = `${import.meta.env.BASE_URL}logo-crabb.jpg`
 

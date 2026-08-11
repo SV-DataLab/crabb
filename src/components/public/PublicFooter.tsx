@@ -1,18 +1,30 @@
 import type {
   ActionLink,
   FooterContent,
+  FooterLegalLink,
   InstitutionalContact,
   SocialLink,
 } from '../../types/institutional'
 import { useNavigate } from 'react-router-dom'
+import { isSafeActionUrl } from '../../lib/actionLinks'
 
 const TRAINING_EXTERNAL_URL = 'https://faatra.org.ar/capacitaciones/snit'
 
-const legalLinks = [
+const fallbackLegalLinks = [
   { label: 'Privacidad', url: '/privacidad' },
   { label: 'Términos', url: '/terminos' },
   { label: 'Eliminación de datos', url: '/eliminacion-de-datos' },
 ] satisfies ActionLink[]
+
+function resolveLegalLinks(configured: FooterLegalLink[] | undefined): ActionLink[] {
+  const links = (configured ?? [])
+    .filter((link) => link.visible !== false)
+    .filter((link) => link.label?.trim() && isSafeActionUrl(link.url ?? ''))
+    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+    .map((link) => ({ label: link.label.trim(), url: link.url.trim() }))
+
+  return links.length > 0 ? links : fallbackLegalLinks
+}
 
 type FooterLinkGroup = {
   title: string
@@ -109,6 +121,7 @@ const LinkedinIcon = () => (
 
 export function PublicFooter({ footer, contact, socialLinks }: PublicFooterProps) {
   const navigate = useNavigate()
+  const legalLinks = resolveLegalLinks(footer.legal_links)
 
   const handleFooterNavClick = (
     event: React.MouseEvent<HTMLAnchorElement>,

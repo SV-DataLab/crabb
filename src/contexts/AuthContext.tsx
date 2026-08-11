@@ -11,7 +11,8 @@ type AuthContextValue = {
   isAuthenticated: boolean
   isInitializing: boolean
   isLoading: boolean
-  login: (payload: LoginPayload) => Promise<void>
+  login: (payload: LoginPayload) => Promise<AuthUser>
+  establishSession: (token: string, user?: AuthUser) => Promise<AuthUser>
   logout: () => Promise<void>
   refreshCurrentUser: () => Promise<void>
 }
@@ -69,7 +70,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     persistUser(currentUser)
   }, [])
 
-  const login = useCallback(async (payload: LoginPayload) => {
+  const login = useCallback(async (payload: LoginPayload): Promise<AuthUser> => {
     const result = await authService.login(payload)
     setToken(result.token)
     persistToken(result.token)
@@ -85,10 +86,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (error instanceof ApiError && error.status === 404) {
         setUser(null)
         persistUser(null)
-        return
+        throw error
       }
       throw error
     }
+
+    return authService.getCurrentUser(result.token)
+  }, [refreshCurrentUser])
+
+  const establishSession = useCallback(async (authToken: string, initialUser?: AuthUser): Promise<AuthUser> => {
+    setToken(authToken)
+    persistToken(authToken)
+
+    if (initialUser) {
+      setUser(initialUser)
+      persistUser(initialUser)
+    }
+
+    await refreshCurrentUser(authToken)
+    return authService.getCurrentUser(authToken)
   }, [refreshCurrentUser])
 
   const logout = useCallback(async () => {
@@ -150,10 +166,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isInitializing,
       isLoading: isInitializing,
       login,
+      establishSession,
       logout,
       refreshCurrentUser,
     }),
-    [token, user, isInitializing, login, logout, refreshCurrentUser],
+    [token, user, isInitializing, login, establishSession, logout, refreshCurrentUser],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

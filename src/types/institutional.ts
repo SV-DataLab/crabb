@@ -85,8 +85,34 @@ export type LandingFinalCta = {
   secondary_cta: ActionLink
 }
 
+export type LandingAbout = {
+  eyebrow: string
+  title: string
+  description: string
+  body: string
+  image_url?: string
+  image_alt?: string
+  visible?: boolean
+}
+
+export type LandingNavItem = {
+  label: string
+  url: string
+  order?: number
+  visible?: boolean
+}
+
+export type LandingNavigation = {
+  brand_eyebrow: string
+  brand_name: string
+  logo_url?: string
+  items: LandingNavItem[]
+}
+
 export type LandingContent = {
   hero: LandingHero
+  navigation: LandingNavigation
+  about: LandingAbout
   services: LandingService[]
   campaign: LandingCampaignSection
   data_tecnica: LandingSection
@@ -135,3 +161,12 @@ export type InstitutionalContent = {
 }
 
 export type InstitutionalUpdatePayload = InstitutionalContent
+
+export type InstitutionalPartialUpdate = {
+  institutional_page?: InstitutionalPageContent
+  landing?: Partial<LandingContent> & Record<string, unknown>
+  contact?: InstitutionalContact
+  social_links?: SocialLink[]
+  footer?: FooterContent
+  visibility?: Partial<InstitutionalVisibility>
+}

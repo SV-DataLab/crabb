@@ -34,37 +34,21 @@ export function AssociationSection() {
               </p>
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
+            <div className="grid gap-4">
               <article className="rounded-2xl border border-white/12 bg-white/[0.06] p-5 transition hover:border-sky-200/30 hover:bg-white/[0.09]">
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-200">
-                  Nueva solicitud
+                  Socios y nuevas solicitudes
                 </p>
-                <h3 className="mt-2 text-lg font-semibold text-white">Quiero asociarme</h3>
+                <h3 className="mt-2 text-lg font-semibold text-white">Asociarme / Activar mi cuenta</h3>
                 <p className="mt-2 text-sm leading-6 text-sky-100/75">
-                  Completá el formulario y la administración revisará tu incorporación.
+                  Un solo formulario: si ya figurás en el padrón activamos tu acceso; si no, enviamos
+                  tu solicitud a CRABB.
                 </p>
                 <Link
                   to="/asociarme"
                   className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-sky-300 px-4 py-2.5 text-xs font-bold uppercase tracking-[0.1em] text-[#06213c] transition hover:bg-sky-200 sm:w-auto"
                 >
-                  Quiero asociarme
-                </Link>
-              </article>
-
-              <article className="rounded-2xl border border-white/12 bg-white/[0.04] p-5 transition hover:border-sky-200/25 hover:bg-white/[0.07]">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-200/80">
-                  Acceso socios
-                </p>
-                <h3 className="mt-2 text-lg font-semibold text-white">Ya soy socio</h3>
-                <p className="mt-2 text-sm leading-6 text-sky-100/70">
-                  Si ya figurás en el padrón, podés activar tu cuenta con DNI/CUIT y email
-                  registrado.
-                </p>
-                <Link
-                  to="/registro-socio"
-                  className="mt-4 inline-flex w-full items-center justify-center rounded-full border border-sky-200/25 bg-white/[0.04] px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.1em] text-sky-50 transition hover:border-sky-200/45 hover:bg-white/[0.08] sm:w-auto"
-                >
-                  Activar mi cuenta
+                  Comenzar
                 </Link>
               </article>
             </div>

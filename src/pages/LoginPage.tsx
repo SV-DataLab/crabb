@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { ApiError } from '../lib/apiClient'
 import { useAuth } from '../hooks/useAuth'
+import { getDefaultAuthenticatedPath } from '../utils/socioAccess'
 
 export function LoginPage() {
   const navigate = useNavigate()
@@ -18,8 +19,8 @@ export function LoginPage() {
     setSubmitting(true)
 
     try {
-      await login({ email, password })
-      navigate('/dashboard', { replace: true })
+      const currentUser = await login({ email, password })
+      navigate(getDefaultAuthenticatedPath(currentUser), { replace: true })
     } catch (error) {
       if (error instanceof ApiError && error.status === 422 && error.validationErrors) {
         const firstField = Object.keys(error.validationErrors)[0]
@@ -86,15 +87,9 @@ export function LoginPage() {
 
         <div className="mt-6 space-y-3 border-t border-slate-200 pt-6 text-center text-sm text-slate-600">
           <p>
-            ¿Ya sos socio y no tenés cuenta?{' '}
-            <Link to="/registro-socio" className="font-medium text-blue-700 hover:text-blue-900">
-              Activar cuenta de socio
-            </Link>
-          </p>
-          <p>
-            ¿Querés asociarte a CRABB?{' '}
+            ¿Querés asociarte o activar tu cuenta de socio?{' '}
             <Link to="/asociarme" className="font-medium text-blue-700 hover:text-blue-900">
-              Solicitar asociación
+              Asociarme / Activar mi cuenta
             </Link>
           </p>
         </div>

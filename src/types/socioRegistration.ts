@@ -29,9 +29,16 @@ export type SocioJoinRequestResponse = {
 
 export type SocioAccountActivationResponse = {
   message?: string
+  token?: string
+  access_token?: string
+  pendingApproval?: boolean
   user?: {
     id: number | string
     role: string
+    email?: string
+    name?: string
+    socio_id?: number | string | null
+    socio?: unknown
   }
 }
 

@@ -127,7 +127,9 @@ export function ContactCommunitySection({
         <div className="grid gap-8 lg:grid-cols-[1.15fr_0.85fr] lg:items-start">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-700">CONTACTO INSTITUCIONAL</p>
-            <h2 className="mt-3 text-3xl font-semibold leading-tight text-slate-900 md:text-4xl lg:text-[2.65rem]">Conectá con CRABB</h2>
+            <h2 className="mt-3 text-3xl font-semibold leading-tight text-slate-900 md:text-4xl lg:text-[2.65rem]">
+              Contactá con CRABB
+            </h2>
             <p className="mt-4 max-w-xl text-sm leading-relaxed text-slate-600 md:text-base">
               Estamos para acompañar a talleres, concesionarias, agencias y empresas vinculadas al ecosistema automotor
               regional.
