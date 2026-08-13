@@ -1,4 +1,5 @@
 const DEFAULT_API_BASE_URL = 'https://api.crabbahia.com.ar/api'
+const DEFAULT_TALLEROK_API_URL = 'https://tallerok-api.crabbahia.com.ar/api'
 
 function normalizeBaseUrl(value: string): string {
   const trimmed = value.trim()
@@ -26,9 +27,13 @@ function isValidHttpUrl(value: string): boolean {
 }
 
 const apiBaseUrl = normalizeBaseUrl(import.meta.env.VITE_API_BASE_URL ?? DEFAULT_API_BASE_URL)
+const tallerokApiUrl = normalizeBaseUrl(
+  import.meta.env.VITE_TALLEROK_API_URL ?? DEFAULT_TALLEROK_API_URL,
+)
 
 export const env = {
   apiBaseUrl,
+  tallerokApiUrl,
   authLoginEndpoint: normalizeEndpoint(import.meta.env.VITE_AUTH_LOGIN_ENDPOINT, '/auth/login'),
   authMeEndpoint: normalizeEndpoint(import.meta.env.VITE_AUTH_ME_ENDPOINT, '/auth/me'),
   authLogoutEndpoint: normalizeEndpoint(import.meta.env.VITE_AUTH_LOGOUT_ENDPOINT, '/auth/logout'),
