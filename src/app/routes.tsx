@@ -29,6 +29,7 @@ import { SocioCarnetPage } from '../pages/SocioCarnetPage'
 import { SocioPerfilPage } from '../pages/SocioPerfilPage'
 import { SocioUnlinkedAccountPage } from '../pages/SocioUnlinkedAccountPage'
 import { PublicCarnetPage } from '../pages/PublicCarnetPage'
+import { PublicWorkshopBookingPage } from '../pages/PublicWorkshopBookingPage'
 import { AdminOnlyRoute, ProtectedRoute, PublicOnlyRoute, SocioOnlyRoute } from './routeGuards'
 
 export const router = createBrowserRouter([
@@ -51,6 +52,10 @@ export const router = createBrowserRouter([
   {
     path: '/carnet/:token',
     element: <PublicCarnetPage />,
+  },
+  {
+    path: '/talleres/:slug/turno',
+    element: <PublicWorkshopBookingPage />,
   },
   {
     path: '/login',
