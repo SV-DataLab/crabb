@@ -377,29 +377,6 @@ export function mapPreviewContractToInstitutionalContent(
 
 export const institutionalPreviewContent = mapPreviewContractToInstitutionalContent(institutionalPreviewData)
 
-export const institutionalPreviewFooterLinkGroups = [
-  {
-    title: 'Links rapidos',
-    links: [
-      { label: 'Inicio', url: '#inicio' },
-      { label: 'Institucional', url: '/institucional' },
-      { label: 'Contacto', url: '#contacto' },
-    ],
-  },
-  {
-    title: 'Servicios',
-    links: [
-      { label: 'Representacion', url: '#servicios' },
-      { label: 'Capacitaciones', url: TRAINING_EXTERNAL_URL },
-      { label: 'Data tecnica', url: '#data-tecnica' },
-    ],
-  },
-  {
-    title: 'Legal',
-    links: institutionalPreviewData.footer.legal_links,
-  },
-]
-
 export function getInstitutionalContentWithFallback(
   apiContent: InstitutionalContent | null | undefined,
 ): InstitutionalContent {
