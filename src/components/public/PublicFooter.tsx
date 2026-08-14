@@ -6,9 +6,8 @@ import type {
   SocialLink,
 } from '../../types/institutional'
 import { useNavigate } from 'react-router-dom'
-import { isSafeActionUrl } from '../../lib/actionLinks'
-
-const TRAINING_EXTERNAL_URL = 'https://faatra.org.ar/capacitaciones/snit'
+import { isSafeActionUrl, resolveVisibleSocialLinks } from '../../lib/actionLinks'
+import type { PublicNavItem } from './PublicHeader'
 
 const fallbackLegalLinks = [
   { label: 'Privacidad', url: '/privacidad' },
@@ -26,16 +25,11 @@ function resolveLegalLinks(configured: FooterLegalLink[] | undefined): ActionLin
   return links.length > 0 ? links : fallbackLegalLinks
 }
 
-type FooterLinkGroup = {
-  title: string
-  links: ActionLink[]
-}
-
 type PublicFooterProps = {
   footer: FooterContent
   contact: InstitutionalContact
   socialLinks: SocialLink[]
-  linkGroups: FooterLinkGroup[]
+  navItems: PublicNavItem[]
 }
 
 const MailIcon = () => (
@@ -119,7 +113,46 @@ const LinkedinIcon = () => (
   </svg>
 )
 
-export function PublicFooter({ footer, contact, socialLinks }: PublicFooterProps) {
+const YoutubeIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" className="h-4 w-4">
+    <rect x="3.5" y="6.5" width="17" height="11" rx="3" stroke="currentColor" strokeWidth="1.8" />
+    <path d="M10.5 9.8v4.4l4-2.2-4-2.2Z" fill="currentColor" />
+  </svg>
+)
+
+const WhatsappIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" className="h-4 w-4">
+    <path
+      d="M6 18.5 6.9 15A7.3 7.3 0 1 1 10 19.6l-4 .9Z"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M9.3 9.6c.2-.5.5-.5.8-.5h.5c.2 0 .4 0 .5.4.2.4.6 1.4.6 1.5.1.1.1.3 0 .4-.1.2-.1.3-.3.4-.1.2-.3.3-.4.5-.1.1-.3.3-.1.6.2.3.8 1.2 1.6 1.9 1.1 1 2 1.2 2.3 1.4.3.1.5.1.6-.1.2-.2.7-.8.9-1 .2-.3.3-.2.6-.1l1.5.7c.2.1.3.2.4.3.1.2.1.9-.2 1.4-.3.5-1.4 1.1-1.9 1.1-.5 0-1.1.1-3.6-1s-4-3.4-4.2-3.7c-.1-.2-1-1.3-1-2.6 0-1.2.6-1.8.8-2.1Z"
+      fill="currentColor"
+    />
+  </svg>
+)
+
+const GenericLinkIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" className="h-4 w-4">
+    <circle cx="12" cy="12" r="8" stroke="currentColor" strokeWidth="1.8" />
+    <path d="M4 12h16M12 4c2.4 2.2 2.4 13.8 0 16M12 4c-2.4 2.2-2.4 13.8 0 16" stroke="currentColor" strokeWidth="1.6" />
+  </svg>
+)
+
+function resolveSocialIcon(platform: string) {
+  const normalized = platform.toLowerCase()
+  if (normalized.includes('instagram')) return <InstagramIcon />
+  if (normalized.includes('facebook')) return <FacebookIcon />
+  if (normalized.includes('linkedin')) return <LinkedinIcon />
+  if (normalized.includes('youtube')) return <YoutubeIcon />
+  if (normalized.includes('whatsapp')) return <WhatsappIcon />
+  return <GenericLinkIcon />
+}
+
+export function PublicFooter({ footer, contact, socialLinks, navItems }: PublicFooterProps) {
   const navigate = useNavigate()
   const legalLinks = resolveLegalLinks(footer.legal_links)
 
@@ -146,48 +179,18 @@ export function PublicFooter({ footer, contact, socialLinks }: PublicFooterProps
   const footerConfig = {
     brand: 'CRABB',
     description: 'Cámara de Reparación de Automotores de Bahía Blanca',
-    summary:
-      footer.description?.trim() ||
-      'Representación institucional del ecosistema automotor regional.',
+    summary: footer.description,
     contact: {
-      email: contact.email || 'crabbiahblanca@gmail.com',
-      phone: contact.phone || '+54 291 402-7004',
-      location: contact.address || 'Bahía Blanca, Buenos Aires, Argentina',
+      email: contact.email,
+      phone: contact.phone,
+      location: contact.address,
     },
-    navLinks: [
-      { label: 'Inicio', url: '#inicio' },
-      { label: 'Institucional', url: '/institucional' },
-      { label: 'Servicios', url: '#servicios' },
-      { label: 'Capacitaciones', url: TRAINING_EXTERNAL_URL },
-      { label: 'Data Técnica', url: '/data-tecnica' },
-      { label: 'Contacto', url: '#contacto' },
-    ] satisfies ActionLink[],
-    socials: [
-      {
-        label: 'Instagram',
-        href:
-          socialLinks.find((link) =>
-            link.platform.toLowerCase().includes('instagram'),
-          )?.url || '#',
-        icon: <InstagramIcon />,
-      },
-      {
-        label: 'Facebook',
-        href:
-          socialLinks.find((link) =>
-            link.platform.toLowerCase().includes('facebook'),
-          )?.url || '#',
-        icon: <FacebookIcon />,
-      },
-      {
-        label: 'LinkedIn',
-        href:
-          socialLinks.find((link) =>
-            link.platform.toLowerCase().includes('linkedin'),
-          )?.url || '#',
-        icon: <LinkedinIcon />,
-      },
-    ],
+    navLinks: navItems,
+    socials: resolveVisibleSocialLinks(socialLinks).map((link) => ({
+      label: link.label?.trim() || link.platform.trim(),
+      href: link.url.trim(),
+      icon: resolveSocialIcon(link.platform),
+    })),
   }
 
   return (
@@ -268,10 +271,10 @@ export function PublicFooter({ footer, contact, socialLinks }: PublicFooterProps
               {footerConfig.navLinks.map((link) => (
                 <li key={link.label}>
                   <a
-                    href={link.url}
-                    target={link.url.startsWith('http') ? '_blank' : undefined}
-                    rel={link.url.startsWith('http') ? 'noopener noreferrer' : undefined}
-                    onClick={(event) => handleFooterNavClick(event, link.url)}
+                    href={link.href}
+                    target={link.href.startsWith('http') ? '_blank' : undefined}
+                    rel={link.href.startsWith('http') ? 'noopener noreferrer' : undefined}
+                    onClick={(event) => handleFooterNavClick(event, link.href)}
                     className="text-sm text-blue-50/82 transition hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-300 focus-visible:ring-offset-2 focus-visible:ring-offset-[#061f3d]"
                   >
                     {link.label}

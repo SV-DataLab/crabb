@@ -223,12 +223,12 @@ export function PublicHero({
           <div className="order-5 flex w-full flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-4 lg:col-start-1 lg:row-start-4">
             <PublicActionLink
               link={primaryLink}
-              className="hero-animate-cta-primary inline-flex w-full items-center justify-center rounded-lg bg-gradient-to-r from-sky-300 to-sky-400 px-7 py-4 text-sm font-bold uppercase tracking-[0.08em] text-[#06213c] shadow-[0_12px_40px_rgba(56,189,248,0.25)] transition hover:brightness-110 sm:w-auto"
+              className="hero-animate-cta-primary inline-flex w-full items-center justify-center rounded-full bg-gradient-to-r from-sky-300 to-sky-400 px-7 py-4 text-sm font-bold uppercase tracking-[0.08em] text-[#06213c] shadow-[0_12px_40px_rgba(56,189,248,0.25)] transition hover:brightness-110 sm:w-auto"
             />
 
             <PublicActionLink
               link={secondaryLink}
-              className="hero-animate-cta-secondary inline-flex w-full items-center justify-center rounded-lg border border-white/25 bg-white/5 px-7 py-4 text-sm font-bold uppercase tracking-[0.08em] text-white backdrop-blur-sm transition hover:border-sky-300/50 hover:bg-white/8 sm:w-auto"
+              className="hero-animate-cta-secondary inline-flex w-full items-center justify-center rounded-full border border-white/25 bg-white/5 px-7 py-4 text-sm font-bold uppercase tracking-[0.08em] text-white backdrop-blur-sm transition hover:border-sky-300/50 hover:bg-white/8 sm:w-auto"
             />
           </div>
         </div>

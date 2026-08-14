@@ -1,10 +1,7 @@
 import type { ReactNode } from 'react'
 import { PublicFooter } from './PublicFooter'
 import { PublicHeader } from './PublicHeader'
-import {
-  institutionalPreviewContent,
-  institutionalPreviewFooterLinkGroups,
-} from '../../features/institutional/institutionalPreviewData'
+import { institutionalPreviewContent } from '../../features/institutional/institutionalPreviewData'
 
 const TRAINING_EXTERNAL_URL = 'https://faatra.org.ar/capacitaciones/snit'
 
@@ -43,7 +40,7 @@ export function LegalPageLayout({ children }: LegalPageLayoutProps) {
         footer={footer}
         contact={contact}
         socialLinks={socialLinks}
-        linkGroups={institutionalPreviewFooterLinkGroups}
+        navItems={publicNavItems}
       />
     </main>
   )

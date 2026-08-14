@@ -39,3 +39,37 @@ export function isForbiddenPublicPath(url: string): boolean {
 export function isPublicCmsUrl(url: string): boolean {
   return isSafeActionUrl(url) && !isForbiddenPublicPath(url)
 }
+
+/**
+ * Rutas que existen en el router pero están anidadas bajo ProtectedRoute
+ * (requieren sesión iniciada). Se usan solo para mostrar un aviso visual
+ * ("Requiere ingreso") junto a los links públicos que apuntan ahí — no
+ * cambian el comportamiento de las rutas ni de los guards.
+ */
+type SocialLinkLike = {
+  platform: string
+  url: string
+  order?: number
+  visible?: boolean
+}
+
+/** Redes visibles, ordenadas, y garantizadas con URL segura (nunca placeholders vacíos o "#"). */
+export function resolveVisibleSocialLinks<T extends SocialLinkLike>(links: T[]): T[] {
+  return links
+    .filter((link) => link.platform?.trim() && isSafeActionUrl(link.url ?? ''))
+    .filter((link) => link.visible !== false)
+    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+}
+
+export function isProtectedInternalPath(url: string): boolean {
+  const trimmed = url.trim().toLowerCase()
+  if (!trimmed) return false
+  return (
+    trimmed === '/institucional' ||
+    trimmed.startsWith('/institucional/') ||
+    trimmed.startsWith('/institucional?') ||
+    trimmed === '/data-tecnica' ||
+    trimmed.startsWith('/data-tecnica/') ||
+    trimmed.startsWith('/data-tecnica?')
+  )
+}
