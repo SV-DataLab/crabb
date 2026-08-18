@@ -1,4 +1,5 @@
 import type { InstitutionalContact, LandingFinalCta, SocialLink } from '../../types/institutional'
+import { resolveVisibleSocialLinks } from '../../lib/actionLinks'
 import { PublicActionLink } from './PublicActionLink'
 
 type ContactCommunitySectionProps = {
@@ -9,10 +10,6 @@ type ContactCommunitySectionProps = {
   showSocialLinks: boolean
 }
 
-type SocialContactLink = {
-  label: string
-  href: string
-}
 
 function ContactIcon({ kind }: { kind: 'institution' | 'users' | 'education' | 'mail' | 'phone' | 'clock' }) {
   if (kind === 'institution') {
@@ -75,27 +72,10 @@ export function ContactCommunitySection({
   showContact,
   showSocialLinks,
 }: ContactCommunitySectionProps) {
-  // TODO: reemplazar esta configuracion local por datos administrables desde Superadmin.
-  const contactConfig = {
-    address: contact.address || 'Bahía Blanca, Buenos Aires, Argentina',
-    email: contact.email || 'info@crabb.com',
-    phone: contact.phone || '+54 291 400-0000',
-    hours: contact.hours || 'Lunes a viernes de 8:00 a 16:00',
-    socials: [
-      {
-        label: 'Instagram',
-        href: socialLinks.find((link) => link.platform.toLowerCase().includes('instagram'))?.url || '#',
-      },
-      {
-        label: 'Facebook',
-        href: socialLinks.find((link) => link.platform.toLowerCase().includes('facebook'))?.url || '#',
-      },
-      {
-        label: 'LinkedIn',
-        href: socialLinks.find((link) => link.platform.toLowerCase().includes('linkedin'))?.url || '#',
-      },
-    ] satisfies SocialContactLink[],
-  }
+  const visibleSocials = resolveVisibleSocialLinks(socialLinks).map((link) => ({
+    label: link.label?.trim() || link.platform.trim(),
+    href: link.url.trim(),
+  }))
 
   const supportPoints = [
     {
@@ -174,7 +154,7 @@ export function ContactCommunitySection({
                     </span>
                     <div>
                       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-blue-200">Dirección</p>
-                      <p className="mt-1 leading-relaxed">{contactConfig.address}</p>
+                      <p className="mt-1 leading-relaxed">{contact.address}</p>
                     </div>
                   </div>
 
@@ -185,10 +165,10 @@ export function ContactCommunitySection({
                     <div>
                       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-blue-200">Email</p>
                       <a
-                        href={`mailto:${contactConfig.email}`}
+                        href={`mailto:${contact.email}`}
                         className="mt-1 inline-flex break-all text-blue-50 transition hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-200/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0f2747]"
                       >
-                        {contactConfig.email}
+                        {contact.email}
                       </a>
                     </div>
                   </div>
@@ -201,10 +181,10 @@ export function ContactCommunitySection({
                       <div>
                         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-blue-200">Teléfono</p>
                         <a
-                          href={`tel:${contactConfig.phone}`}
+                          href={`tel:${contact.phone}`}
                           className="mt-1 inline-flex text-blue-50 transition hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-200/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0f2747]"
                         >
-                          {contactConfig.phone}
+                          {contact.phone}
                         </a>
                       </div>
                     </div>
@@ -215,7 +195,7 @@ export function ContactCommunitySection({
                       </span>
                       <div>
                         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-blue-200">Horarios</p>
-                        <p className="mt-1 leading-relaxed text-blue-50">{contactConfig.hours}</p>
+                        <p className="mt-1 leading-relaxed text-blue-50">{contact.hours}</p>
                       </div>
                     </div>
                   </div>
@@ -233,11 +213,11 @@ export function ContactCommunitySection({
                 />
               </div>
 
-              {showSocialLinks ? (
+              {showSocialLinks && visibleSocials.length > 0 ? (
                 <div className="rounded-2xl border border-white/12 bg-white/[0.04] px-4 py-3">
                   <p className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-200">Redes sociales</p>
                   <div className="mt-3 flex flex-wrap gap-2">
-                    {contactConfig.socials.map((social) => (
+                    {visibleSocials.map((social) => (
                       <a
                         key={social.label}
                         href={social.href}

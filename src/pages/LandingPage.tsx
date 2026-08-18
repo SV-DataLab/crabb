@@ -2,13 +2,11 @@ import { useEffect, useState } from 'react'
 import heroBlueprintCar from '../assets/hero-blueprint-car.png'
 import { ContactCommunitySection } from '../components/public/ContactCommunitySection'
 import { InstitutionalServicesSection } from '../components/public/InstitutionalServicesSection'
+import { OpportunitiesSection } from '../components/public/OpportunitiesSection'
 import { PublicFooter } from '../components/public/PublicFooter'
 import { PublicHero } from '../components/public/PublicHero'
 import { isPublicCmsUrl, isSafeActionUrl } from '../lib/actionLinks'
-import {
-  getInstitutionalContentWithFallback,
-  institutionalPreviewFooterLinkGroups,
-} from '../features/institutional/institutionalPreviewData'
+import { getInstitutionalContentWithFallback, institutionalPreviewContent } from '../features/institutional/institutionalPreviewData'
 import { AboutSection } from '../features/landing/components/AboutSection'
 import { LandingImage } from '../features/landing/components/LandingImage'
 import { LandingNavbar } from '../features/landing/components/LandingNavbar'
@@ -17,23 +15,13 @@ import { ApiError } from '../lib/apiClient'
 import { institutionalService } from '../services/institutionalService'
 import type { ActionLink, InstitutionalContent, LandingNavigation } from '../types/institutional'
 
-const publicNavItems = [
-  { label: 'Inicio', href: '#inicio' },
-  { label: 'Nosotros', href: '#sobre-nosotros' },
-  { label: 'Servicios', href: '#servicios' },
-  { label: 'Institucional', href: '/institucional' },
-  { label: 'Contacto', href: '#contacto' },
-]
+const publicNavItems = institutionalPreviewContent.landing.navigation.items.map((item) => ({
+  label: item.label,
+  href: item.url,
+}))
 
-const heroPrimaryCta: ActionLink = {
-  label: 'Conocer servicios',
-  url: '#servicios',
-}
-
-const heroSecondaryCta: ActionLink = {
-  label: 'Contacto institucional',
-  url: '#contacto',
-}
+const heroPrimaryCta: ActionLink = institutionalPreviewContent.landing.hero.primary_cta
+const heroSecondaryCta: ActionLink = institutionalPreviewContent.landing.hero.secondary_cta
 
 function resolvePublicNav(navigation: LandingNavigation | undefined) {
   const items = (navigation?.items ?? [])
@@ -198,6 +186,7 @@ export function LandingPage() {
 
           <AboutSection about={landing.about} />
           <InstitutionalServicesSection services={landing.services} />
+          <OpportunitiesSection opportunities={landing.opportunities} />
         </div>
       </div>
 
@@ -213,7 +202,7 @@ export function LandingPage() {
         footer={content.footer}
         contact={content.contact}
         socialLinks={socialLinks}
-        linkGroups={institutionalPreviewFooterLinkGroups}
+        navItems={navItems}
       />
     </main>
   )

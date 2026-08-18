@@ -1,5 +1,5 @@
 import type { ActionLink, LandingService } from '../../types/institutional'
-import { isPublicCmsUrl } from '../../lib/actionLinks'
+import { isProtectedInternalPath, isPublicCmsUrl } from '../../lib/actionLinks'
 import { PublicActionLink } from './PublicActionLink'
 
 const TRAINING_EXTERNAL_URL = 'https://faatra.org.ar/capacitaciones/snit'
@@ -248,6 +248,7 @@ export function InstitutionalServicesSection({ services }: Props) {
               <div className="mt-auto pt-5">
                 <PublicActionLink
                   link={card.cta}
+                  badge={isProtectedInternalPath(card.cta.url) ? 'Requiere ingreso' : undefined}
                   className={
                     card.key === 'membresia'
                       ? 'inline-flex items-center rounded-full bg-sky-300/90 px-4 py-2 text-xs font-bold uppercase tracking-[0.08em] text-[#06213c] transition hover:bg-sky-200'

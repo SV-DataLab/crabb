@@ -69,6 +69,39 @@ function moveService(services: LandingService[], fromIndex: number, toIndex: num
   return normalizeServiceOrders(next)
 }
 
+/**
+ * Fusiona el borrador del formulario (título/descripción tipeados) dentro de la lista,
+ * aunque el usuario no haya apretado "Actualizar/Agregar servicio" antes de guardar.
+ * Sin esto, "Guardar cambios" podía persistir la lista vieja e ignorar en silencio
+ * la edición recién tipeada (ver AUDITORIA: servicios institucionales no se reflejaban en público).
+ */
+function mergeDraftIntoServices(
+  services: LandingService[],
+  draft: LandingService,
+  editingIndex: number | null,
+): LandingService[] {
+  const trimmedTitle = draft.title.trim()
+  if (!trimmedTitle) return services
+
+  const normalizedDraft: LandingService = {
+    ...draft,
+    title: trimmedTitle,
+    description: draft.description.trim(),
+    cta_label: draft.cta_label?.trim() ?? '',
+    cta_href: draft.cta_href?.trim() ?? '',
+    icon: draft.icon ?? 'representacion',
+    visible: draft.visible ?? true,
+  }
+
+  if (editingIndex === null) {
+    return normalizeServiceOrders([...services, normalizedDraft])
+  }
+
+  return normalizeServiceOrders(
+    services.map((service, index) => (index === editingIndex ? normalizedDraft : service)),
+  )
+}
+
 export function AdminSitioWebServiciosPage() {
   const [content, setContent] = useState<InstitutionalContent>(createEmptyInstitutionalContent)
   const [services, setServices] = useState<LandingService[]>([])
@@ -199,33 +232,13 @@ export function AdminSitioWebServiciosPage() {
   }
 
   const applyFormDraft = () => {
-    const draft = {
-      ...formService,
-      title: formService.title.trim(),
-      description: formService.description.trim(),
-      cta_label: formService.cta_label?.trim() ?? '',
-      cta_href: formService.cta_href?.trim() ?? '',
-      icon: formService.icon ?? 'representacion',
-      visible: formService.visible ?? true,
-    }
-
-    if (!draft.title) {
+    if (!formService.title.trim()) {
       setError('El título del servicio es obligatorio.')
       return
     }
 
     setError(null)
-
-    if (editingIndex === null) {
-      const next = normalizeServiceOrders([...sortedServices, draft])
-      setServices(next)
-      resetForm(next)
-      return
-    }
-
-    const next = normalizeServiceOrders(
-      sortedServices.map((service, currentIndex) => (currentIndex === editingIndex ? draft : service)),
-    )
+    const next = mergeDraftIntoServices(sortedServices, formService, editingIndex)
     setServices(next)
     resetForm(next)
   }
@@ -238,7 +251,8 @@ export function AdminSitioWebServiciosPage() {
     setError(null)
     setSuccessMessage(null)
 
-    const sanitizedServices = sanitizeServices(services)
+    const servicesToSave = mergeDraftIntoServices(sortedServices, formService, editingIndex)
+    const sanitizedServices = sanitizeServices(servicesToSave)
 
     try {
       const updated = await institutionalService.updateInstitutionalPartial({
