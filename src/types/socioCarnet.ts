@@ -1,4 +1,5 @@
 export type SocioCarnet = {
+  token: string
   nroSocio: string
   nombreApellido: string
   denominacionTaller?: string | null
@@ -6,6 +7,7 @@ export type SocioCarnet = {
   condicion?: string | null
   estado?: string | null
   estadoCarnet: 'valido' | 'no_valido' | string
+  fotoUrl?: string | null
   verificationUrl: string
   qrPayload: string
   perfilActualizadoEn?: string | null
@@ -20,4 +22,5 @@ export type PublicCarnet = {
   condicion?: string | null
   estado?: string | null
   estadoCarnet: 'valido' | 'no_valido' | string
+  fotoUrl?: string | null
 }

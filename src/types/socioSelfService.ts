@@ -12,6 +12,7 @@ export type SocioMe = {
   condicion?: string | null
   estado?: string | null
   estadoCuota?: string | null
+  fotoUrl?: string | null
   perfilActualizadoEn?: string | null
 }
 

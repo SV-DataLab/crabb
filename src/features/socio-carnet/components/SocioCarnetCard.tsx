@@ -1,4 +1,5 @@
 import type { SocioCarnet } from '../../../types/socioCarnet'
+import { CarnetPhoto } from './CarnetPhoto'
 import { CopyCarnetLinkButton } from './CopyCarnetLinkButton'
 import { ReadOnlyField } from './ReadOnlyField'
 import { SocioQrBox } from './SocioQrBox'
@@ -8,9 +9,22 @@ type SocioCarnetCardProps = {
   carnet: SocioCarnet
 }
 
+/**
+ * Arma la URL de verificación con el origin actual del navegador (no un valor
+ * fijo del backend), para que el QR apunte siempre al frontend que la sirvió
+ * (localhost en desarrollo, producción en producción) sin hardcodear ninguno.
+ */
+function buildVerificationUrl(carnet: SocioCarnet): string {
+  if (carnet.token && typeof window !== 'undefined' && window.location?.origin) {
+    return `${window.location.origin}/carnet/${carnet.token}`
+  }
+  return carnet.verificationUrl
+}
+
 export function SocioCarnetCard({ carnet }: SocioCarnetCardProps) {
   const logoCrabbUrl = `${import.meta.env.BASE_URL}logo-crabb.jpg`
-  const qrValue = carnet.qrPayload || carnet.verificationUrl
+  const verificationUrl = buildVerificationUrl(carnet)
+  const qrValue = verificationUrl || carnet.qrPayload
 
   return (
     <div className="mx-auto max-w-xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-lg">
@@ -28,6 +42,10 @@ export function SocioCarnetCard({ carnet }: SocioCarnetCardProps) {
       </div>
 
       <div className="space-y-6 px-6 py-6">
+        <div className="flex justify-center">
+          <CarnetPhoto fotoUrl={carnet.fotoUrl} nombreApellido={carnet.nombreApellido} />
+        </div>
+
         <dl className="grid gap-4 sm:grid-cols-2">
           <ReadOnlyField label="Nombre y apellido" value={carnet.nombreApellido} />
           <ReadOnlyField label="Nº de socio" value={carnet.nroSocio} />
@@ -39,7 +57,7 @@ export function SocioCarnetCard({ carnet }: SocioCarnetCardProps) {
 
         <SocioQrBox value={qrValue} />
 
-        {carnet.verificationUrl ? <CopyCarnetLinkButton url={carnet.verificationUrl} /> : null}
+        {verificationUrl ? <CopyCarnetLinkButton url={verificationUrl} /> : null}
 
         {carnet.perfilActualizadoEn ? (
           <p className="text-xs text-slate-500">

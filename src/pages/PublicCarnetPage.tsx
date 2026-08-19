@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import { CarnetPhoto } from '../features/socio-carnet/components/CarnetPhoto'
 import { ReadOnlyField } from '../features/socio-carnet/components/ReadOnlyField'
 import { SocioStatusBadge } from '../features/socio-carnet/components/SocioStatusBadge'
+import { usePageMeta } from '../hooks/usePageMeta'
 import { PublicCarnetError, publicCarnetService } from '../services/publicCarnetService'
 import type { PublicCarnet } from '../types/socioCarnet'
 
@@ -13,6 +15,10 @@ export function PublicCarnetPage() {
   const [notFound, setNotFound] = useState(!trimmedToken)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const logoCrabbUrl = `${import.meta.env.BASE_URL}logo-crabb.jpg`
+
+  usePageMeta('Verificación de carnet | CRABB', 'Verificación pública de carnet de socio de CRABB.', {
+    noIndex: true,
+  })
 
   useEffect(() => {
     if (!trimmedToken) return
@@ -30,7 +36,9 @@ export function PublicCarnetPage() {
           setNotFound(true)
           return
         }
-        setErrorMessage(error instanceof Error ? error.message : 'No se pudo verificar el carnet.')
+        // Mensaje genérico deliberado: nunca reflejamos el texto crudo del error
+        // (podría exponer detalles de red o del backend) en una página pública.
+        setErrorMessage('No pudimos verificar el carnet. Probá nuevamente en unos minutos.')
       })
       .finally(() => {
         if (active) setLoading(false)
@@ -41,17 +49,23 @@ export function PublicCarnetPage() {
     }
   }, [trimmedToken])
 
+  const hasConnectionError = Boolean(errorMessage) && !notFound && !carnet
+
   const statusTitle = notFound
     ? 'Carnet no encontrado'
-    : carnet?.valid
-      ? 'Carnet válido'
-      : 'Carnet no válido'
+    : hasConnectionError
+      ? 'No se pudo verificar'
+      : carnet?.valid
+        ? 'Carnet vigente'
+        : 'Carnet no vigente'
 
   const statusClass = notFound
     ? 'border-red-200 bg-red-50 text-red-800'
-    : carnet?.valid
-      ? 'border-emerald-200 bg-emerald-50 text-emerald-900'
-      : 'border-amber-200 bg-amber-50 text-amber-900'
+    : hasConnectionError
+      ? 'border-slate-300 bg-slate-100 text-slate-700'
+      : carnet?.valid
+        ? 'border-emerald-200 bg-emerald-50 text-emerald-900'
+        : 'border-amber-200 bg-amber-50 text-amber-900'
 
   return (
     <div className="flex min-h-screen min-h-dvh items-center justify-center bg-slate-50 px-4 py-10">
@@ -80,6 +94,9 @@ export function PublicCarnetPage() {
 
             {carnet && !notFound ? (
               <div className="mt-6 space-y-4">
+                <div className="flex justify-center">
+                  <CarnetPhoto fotoUrl={carnet.fotoUrl} nombreApellido={carnet.nombreApellido} />
+                </div>
                 <div className="flex items-center justify-between">
                   <p className="text-sm text-slate-600">Estado del carnet</p>
                   <SocioStatusBadge estadoCarnet={carnet.estadoCarnet} />

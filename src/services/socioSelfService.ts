@@ -4,6 +4,7 @@ import type { SocioCarnet } from '../types/socioCarnet'
 
 const SOCIO_ME_ENDPOINT = '/socio/me'
 const SOCIO_CARNET_ENDPOINT = '/socio/carnet'
+const SOCIO_FOTO_ENDPOINT = '/socio/foto'
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null
@@ -54,6 +55,7 @@ function normalizeSocioMe(raw: unknown): SocioMe {
     condicion: toStringOrEmpty(candidate.condicion) || null,
     estado: toStringOrEmpty(candidate.estado) || null,
     estadoCuota: toStringOrEmpty(firstDefined(candidate.estadoCuota, candidate.estado_cuota)) || null,
+    fotoUrl: toStringOrEmpty(firstDefined(candidate.fotoUrl, candidate.foto_url)) || null,
     perfilActualizadoEn:
       toStringOrEmpty(firstDefined(candidate.perfilActualizadoEn, candidate.perfil_actualizado_en)) || null,
   }
@@ -71,6 +73,7 @@ function normalizeSocioCarnet(raw: unknown): SocioCarnet {
   const qrPayload = toStringOrEmpty(firstDefined(candidate.qrPayload, candidate.qr_payload))
 
   return {
+    token: toStringOrEmpty(candidate.token),
     nroSocio: toStringOrEmpty(firstDefined(candidate.nroSocio, candidate.nro_socio)),
     nombreApellido: toStringOrEmpty(firstDefined(candidate.nombreApellido, candidate.nombre_apellido)),
     denominacionTaller:
@@ -79,6 +82,7 @@ function normalizeSocioCarnet(raw: unknown): SocioCarnet {
     condicion: toStringOrEmpty(candidate.condicion) || null,
     estado: toStringOrEmpty(candidate.estado) || null,
     estadoCarnet: toStringOrEmpty(firstDefined(candidate.estadoCarnet, candidate.estado_carnet)) || 'no_valido',
+    fotoUrl: toStringOrEmpty(firstDefined(candidate.fotoUrl, candidate.foto_url)) || null,
     verificationUrl,
     qrPayload: qrPayload || verificationUrl,
     perfilActualizadoEn:
@@ -135,6 +139,32 @@ export const socioSelfService = {
       return normalizeSocioCarnet(response)
     } catch (error) {
       mapSocioError(error, 'No se pudo cargar tu carnet.')
+    }
+  },
+
+  async uploadFoto(file: File): Promise<SocioMe> {
+    try {
+      const formData = new FormData()
+      formData.append('foto', file)
+
+      const response = await apiRequest<unknown>(SOCIO_FOTO_ENDPOINT, {
+        method: 'POST',
+        body: formData,
+      })
+      return normalizeSocioMe(response)
+    } catch (error) {
+      mapSocioError(error, 'No se pudo subir la foto.')
+    }
+  },
+
+  async deleteFoto(): Promise<SocioMe> {
+    try {
+      const response = await apiRequest<unknown>(SOCIO_FOTO_ENDPOINT, {
+        method: 'DELETE',
+      })
+      return normalizeSocioMe(response)
+    } catch (error) {
+      mapSocioError(error, 'No se pudo eliminar la foto.')
     }
   },
 }

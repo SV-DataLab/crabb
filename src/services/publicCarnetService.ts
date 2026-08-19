@@ -44,6 +44,7 @@ function normalizePublicCarnet(raw: unknown): PublicCarnet {
     condicion: toStringOrEmpty(candidate.condicion) || null,
     estado: toStringOrEmpty(candidate.estado) || null,
     estadoCarnet: estadoCarnet || 'no_valido',
+    fotoUrl: toStringOrEmpty(firstDefined(candidate.fotoUrl, candidate.foto_url)) || null,
   }
 }
 
